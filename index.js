@@ -203,20 +203,6 @@ class Article {
   }
 }
 
-class KantStudien {
-  constructor() {
-    this.config = this.createConfig();
-    this.metadata = this.createMetadata();
-  }
-
-  //Methods
-  createConfig() {}
-
-  createMetadata() {}
-}
-
-// new KantStudien().createMetadata;
-
 const urlFetch = async url => {
   try {
     const { data } = await axios.get(url);
