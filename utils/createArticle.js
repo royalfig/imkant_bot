@@ -1,3 +1,19 @@
+//Local
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+];
+
 class Article {
   constructor(data, config) {
     // basic metainfo
@@ -32,13 +48,24 @@ class Article {
     if (title == undefined) {
       return { formattedTitle: null, shortTitle: null, bookReview: null };
     }
-    const formattedTitle = title.replace(/([a-z])([A-Z])/g, "$1 $2");
-
-    let shortTitle = formattedTitle.split(":")[0];
-    if (shortTitle.length > 255) {
-      shortTitle = shortTitle.substring(0, 255);
-    }
+    let formattedTitle = title.replace(/([a-z])([A-Z])/g, "$1 $2");
     const bookReview = /Seiten?|Pages?|Pp\.?/gi.test(formattedTitle);
+
+    if (bookReview) {
+      const bookReviewArray = formattedTitle.split("[,:]");
+      const bookReviewTitle = bookReviewArray[1];
+      const bookReviewAuthor = bookReviewAuthor[0];
+      const createdBookReviewTitle =
+        bookReviewTitle + " by " + bookReviewAuthor;
+      formattedTitle = createdBookReviewTitle;
+    }
+
+    if (formattedTitle.length > 255 && !bookReview) {
+      const shortTitle = shortTitle.substring(0, 255);
+    } else {
+      const shortTitle = formattedTitle;
+    }
+
     const titleObject = { formattedTitle, shortTitle, bookReview };
     return titleObject;
   }
