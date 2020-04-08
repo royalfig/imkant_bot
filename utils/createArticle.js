@@ -39,9 +39,9 @@ class Article {
 
     // modified info
     this.bookReview = this.createTitleOptions(data.title).bookReview;
-    // this.keywords = this.constructTags(metadata.tags);
-    // this.html = this.createPostContent();
-    // this.ghostObject = this.createGhostObject();
+    this.keywords = this.constructTags(metadata.tags);
+    this.html = this.createPostContent();
+    this.ghostObject = this.createGhostObject();
   }
 
   createTitleOptions(title) {
@@ -130,8 +130,3 @@ class Article {
     return objToPost;
   }
 }
-metadata = {};
-metadata.title =
-  "Matthias Birrer: Kant und die Heterogenität der Erkenntnisquellen. Berlin/Boston: De Gruyter, 2017. 327 Seiten. ISBN 978-3-11-054238-7.";
-const article = new Article(metadata, "15");
-console.log(article.title, article.shortTitle, article.bookReview);

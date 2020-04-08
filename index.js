@@ -1,8 +1,7 @@
 // Node
 const fs = require("fs");
 const path = require("path");
-const { getPosts, deletePublished, sayMyName } = require("./utils/getData");
-
+const { getPosts, deletePublished, deleteDrafts } = require("./utils/getData");
 // Libs
 
 const express = require("express");
@@ -15,6 +14,12 @@ app.get("/", (req, res) => res.send("Hello World!"));
 
 app.get("/delete", (req, res) => {
   deletePublished().then(postArray => {
+    res.send(postArray);
+  });
+});
+
+app.get("/drafts", (req, res) => {
+  deleteDrafts().then(postArray => {
     res.send(postArray);
   });
 });

@@ -9,7 +9,23 @@
 const config = {
   url:
     "https://www.cambridge.org/core/rss/product/id/D3E55E88C6269FFD657D4E68B193ADAB",
-  colorSpace: "15"
+  colorSpace: "15",
+  type: "rss",
+  configMap: {
+    url: "link",
+    image: "",
+    author: "creator",
+    title: "title",
+    journalTitle: "",
+    volume: "",
+    issue: "",
+    firstpage: "",
+    lastpage: "",
+    date: "dc:date",
+    doi: "",
+    abstract: "content",
+    tags: ""
+  }
 };
 
 let Parser = require("rss-parser");
@@ -186,31 +202,7 @@ const urlFetch = async url => {
     metadata.tags = tagArray;
     const ghostPost = new Article(metadata).createGhostObject();
 
-    existingPosts
-      .then(posts => posts.map(post => post.title))
-      .then(titleArray => {
-        const duplicate = titleArray.includes(ghostPost.title);
-        if (!duplicate) {
-          api.posts
-            .add(ghostPost, { source: "html" })
-            .then(response =>
-              console.log("\n✔ Successfully posted " + ghostPost.title + "✔ /n")
-            )
-            .catch(error =>
-              console.error(
-                "\n⚠ There was an error with " + ghostPost.title + "⚠ \n",
-                error
-              )
-            );
-        } else {
-          console.log(`\n⚠ Not posted! ${ghostPost.title} is a duplicate ⚠ \n`);
-        }
-      });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+    
 const rssParser = async url => {
   let result = await parser.parseURL(url);
   result.items.forEach(item => {
