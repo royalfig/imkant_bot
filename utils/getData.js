@@ -22,43 +22,88 @@ provider:	A string representation of the sub and primary domains.
 title:	A user displayable title for the page.
 type:	The type of content as defined by opengraph.
 url:	A canonical URL for the page.
-
-
-//Extend....
-image
-https://static.cambridge.org/covers/KRV_0_0_0/kantian_review.jpg
-title
-keywords
-<meta name="citation_keywords" content="Kant; welfare; rights; left-libertarianism">
-<meta content="Critique of Pure Reason" property="article:tag">
-//Add....
-author
-<meta name="citation_author" content="Luke J. Davies">
-
-journal title
-<meta name="citation_journal_title" content="Kantian Review">
-volume
-<meta name="citation_volume" content="25">
-
-issue
-<meta name="citation_issue" content="1">
-first page
-<meta name="citation_firstpage" content="1">
-last page
-<meta name="citation_lastpage" content="25">
-abstract
-extend description
-<meta name="citation_abstract" content="<div class=&quot;abstract&quot; data-abstract-type=&quot;normal&quot;><p>This article discusses five attempts at justifying the provision of welfare on Kantian grounds. I argue that none of the five proposals is satisfactory. Each faces a serious challenge on textual or systematic grounds. The conclusion to draw from this is not that a Kantian cannot defend the provision of welfare. Rather, the conclusion to draw is that the task of defending the provision of welfare on Kantian grounds is a difficult one whose success we should not take for granted.</p></div>">
-date
-<meta name="citation_publication_date" content="2020/03">
-doi
-<meta name="citation_doi" content="10.1017/S136941541900044X">
-<meta name="dc.identifier" content="doi:10.1017/S136941541900044X">
 */
+
 // Metadata
-const { getMetadata } = require("page-metadata-parser");
+const { getMetadata, metadataRuleSets } = require("page-metadata-parser");
 const domino = require("domino");
 const axios = require("axios").default;
+
+// Add a custom rule
+const addCustomRule = (key, keyContent, property, name) => {
+  const meta = "meta[" + key + "=" + '"' + keyContent + '"]';
+  const rule = {
+    rules: [[meta, element => element.getAttribute(property)]]
+  };
+  metadataRuleSets[name] = rule;
+};
+
+// Custom rules
+
+addCustomRule("name", "citation_keywords", "content", "keyword");
+addCustomRule("name", "citation_author", "content", "author");
+addCustomRule("name", "citation_journal_title", "content", "journalTitle");
+addCustomRule("name", "citation_firstpage", "content", "firstpage");
+addCustomRule("name", "citation_lastpage", "content", "lastpage");
+addCustomRule("name", "citation_volume", "content", "volume");
+addCustomRule("name", "citation_issue", "content", "issue");
+addCustomRule("name", "citation_title", "content", "title");
+
+// Add date set
+const customDateRuleSet = {
+  rules: [
+    [
+      'meta[name="citation_publication_date"]',
+      element => element.getAttribute("content")
+    ],
+    [
+      'meta[property="article:published_time"]',
+      element => element.getAttribute("content")
+    ]
+  ]
+};
+metadataRuleSets.date = customDateRuleSet;
+
+// Add DOI set
+const customDOIRuleSet = {
+  rules: [
+    ['meta[name="citation_doi"]', element => element.getAttribute("content")],
+    [
+      'meta[property="dc.identifier"]',
+      element => element.getAttribute("content")
+    ]
+  ]
+};
+metadataRuleSets.doi = customDOIRuleSet;
+
+// Extend Description (abstract)
+
+const customAbstractRuleSet = {
+  rules: [
+    [
+      'meta[name="citation_abstract"]',
+      element => element.getAttribute("content")
+    ],
+    [
+      'meta[property="og:description"]',
+      element => element.getAttribute("content")
+    ],
+    ['meta[name="description"]', element => element.getAttribute("content")]
+  ]
+};
+metadataRuleSets.abstract = customAbstractRuleSet;
+
+// Extend Keywords
+const customKeywordRuleSet = {
+  rules: [
+    [
+      'meta[name="citation_keywords"]',
+      element => element.getAttribute("content")
+    ],
+    ['meta[name="keywords"]', element => element.getAttribute("content")]
+  ]
+};
+metadataRuleSets.customKeywords = customKeywordRuleSet;
 
 const getRss = async url => {
   let feed = await parser.parseURL(url);
@@ -66,17 +111,21 @@ const getRss = async url => {
 };
 
 exports.getData = async url => {
-  const feed = await getRss(url);
-  const linkArray = feed.items.map(item => item.link);
+  try {
+    const feed = await getRss(url);
+    const linkArray = feed.items.map(item => item.link);
 
-  const promises = linkArray.map(async item => {
-    const { data } = await axios.get(item);
-    const doc = domino.createWindow(data).document;
-    const metadata = getMetadata(doc, url);
-    return metadata;
-  });
-  const dataArray = await Promise.all(promises);
-  return dataArray;
+    const promises = linkArray.map(async item => {
+      const { data } = await axios.get(item);
+      const doc = domino.createWindow(data).document;
+      const metadata = getMetadata(doc, url);
+      return metadata;
+    });
+    const dataArray = await Promise.all(promises);
+    return dataArray;
+  } catch (err) {
+    console.log(err, err.context);
+  }
 };
 
 exports.getPosts = async () => {
@@ -94,10 +143,10 @@ exports.deleteDrafts = async () => {
   const posts = await api.posts.browse();
   if (posts.meta.pagination.total) {
     const postArray = [];
-    posts.forEach(post => {
+    posts.forEach(async post => {
       if (post.status === "draft") {
         postArray.push(post.title);
-        api.posts.delete({ id: post.id });
+        await api.posts.delete({ id: post.id });
       }
     });
     return postArray;
@@ -120,19 +169,26 @@ exports.deletePublished = async () => {
   }
 };
 
-exports.postToGhost = async newPost => {
+exports.postToGhost = async ghostPost => {
   try {
-    const posts = await api.posts.browse();
-    const existingPosts = posts.map(post => post.title);
-    const duplicate = existingPosts.include(newPost.title);
-    if (!duplicate) {
-      api.posts
-        .add(ghostPost)
-        .then(() => `Successfully posted ${ghostPost.title}`)
-        .catch(err => `There was an error with ${ghostPost.title}: ${err}`);
-    } else {
-      return `Not posted. ${ghostPost.title} is a duplicate.`;
+    const postData = await api.posts.browse();
+    console.log(postData);
+    if (postData.meta.pagination.total) {
+      const existingPosts = postData.map(post => post.title);
+      const duplicate = existingPosts.includes(ghostPost.title);
+      if (!duplicate) {
+        api.posts
+          .add(ghostPost)
+          .then(() => `Successfully posted ${ghostPost.title}`)
+          .catch(err => `There was an error with ${ghostPost.title}: ${err}`);
+      } else {
+        return `Not posted. ${ghostPost.title} is a duplicate.`;
+      }
     }
+    api.posts
+      .add(ghostPost)
+      .then(() => `Successfully posted ${ghostPost.title}`)
+      .catch(err => `There was an error with ${ghostPost.title}: ${err}`);
   } catch (err) {
     console.log(err);
   }
