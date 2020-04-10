@@ -15,11 +15,13 @@ const months = [
 ];
 
 class Article {
-  constructor(data) {
+  constructor(data, color) {
     // basic metainfo
+    this.test = console.log(data);
+
     this.url = data.url;
     this.featureImage =
-      `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=15&img="` +
+      `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${color}&img="` +
       Date.now();
     this.image = data.image;
 
@@ -33,6 +35,7 @@ class Article {
     this.firstpage = data.firstpage;
     this.lastpage = data.lastpage;
     this.date = data.date;
+    this.tags = data.tags;
 
     this.doi = "https://doi.org/" + data.doi;
     this.abstract = data.abstract;
@@ -41,7 +44,10 @@ class Article {
     this.bookReview = this.createTitleOptions(data.title).bookReview;
     this.keywords = data.customKeywords;
 
-    this.keywordArray = this.keywordArrayCreator(data.customKeywords);
+    this.keywordArray = this.keywordArrayCreator(
+      data.tags,
+      data.customKeywords
+    );
     this.shortAbstract = this.shortenAbstract(this.abstract);
     this.html = this.createPostContent();
     this.ghostObject = this.createGhostObject();
@@ -56,7 +62,9 @@ class Article {
         bookReview: "no title"
       };
     }
-    let formattedTitle = title.replace(/([a-z])([A-Z])/g, "$1 $2");
+    let formattedTitle = this.stripMarkUp(
+      title.replace(/([a-z])([A-Z])/g, "$1 $2")
+    );
     const bookReview = /Seiten?|Pages?|Pp\.?/gi.test(formattedTitle);
 
     let shortTitle = formattedTitle;
@@ -92,15 +100,19 @@ class Article {
     return { formattedDate, publishedDate };
   }
 
-  keywordArrayCreator(input) {
-    let newArray = input ? input.split(";") : [];
+  keywordArrayCreator(tagArray, keywords) {
+    let newArray = [];
+    if (tagArray) {
+      newArray = tagArray;
+    } else {
+      newArray = keywords ? keywords.split(";") : [];
+    }
 
     if (this.bookReview) {
-      newArray.push("Book Review");
+      newArray.push(this.journalTitle, "Book Review");
     } else {
-      newArray.push("Article");
+      newArray.push(this.journalTitle, "Article");
     }
-    console.log(newArray);
     return newArray;
   }
 
@@ -108,6 +120,7 @@ class Article {
     //  Move date to constructor
 
     const formattedDate = this.createDate(this.date).formattedDate;
+    const img = this.image || this.featureImage;
 
     // TODO Add logic to refine html output when elements are missing.
     const citation = `
@@ -115,7 +128,7 @@ class Article {
         <div class="media__left">
           <a href="${this.url}">
             <figure class="media__img-container">
-              <img class="media__img" src="${this.image}" alt="${this.fulltitle}"/>
+              <img class="media__img" src="${img}" alt="${this.fulltitle}"/>
             </figure>
           </a>
         </div>
@@ -158,6 +171,10 @@ class Article {
       meta_description: this.shortAbstract
     };
     return objToPost;
+  }
+
+  stripMarkUp(input) {
+    return input.replace(/<.+>/g, "");
   }
 }
 module.exports = Article;

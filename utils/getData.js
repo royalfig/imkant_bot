@@ -81,11 +81,11 @@ metadataRuleSets.doi = customDOIRuleSet;
 const customAbstractRuleSet = {
   rules: [
     [
-      'meta[name="citation_abstract"]',
+      'meta[property="og:description"]',
       element => element.getAttribute("content")
     ],
     [
-      'meta[property="og:description"]',
+      'meta[name="citation_abstract"]',
       element => element.getAttribute("content")
     ],
     ['meta[name="description"]', element => element.getAttribute("content")]
@@ -110,6 +110,16 @@ const getRss = async url => {
   return feed;
 };
 
+const getArticleTags = doc => {
+  const tags = doc.querySelectorAll('meta[property="article:tag"]');
+
+  const arr = tags.map(tag => tag.getAttribute("content"));
+  if (arr.length) {
+    return arr;
+  }
+  return null;
+};
+
 exports.getData = async url => {
   try {
     const feed = await getRss(url);
@@ -118,7 +128,9 @@ exports.getData = async url => {
     const promises = linkArray.map(async item => {
       const { data } = await axios.get(item);
       const doc = domino.createWindow(data).document;
+      const articleTags = getArticleTags(doc);
       const metadata = getMetadata(doc, url);
+      metadata.tags = articleTags;
       return metadata;
     });
     const dataArray = await Promise.all(promises);
@@ -146,7 +158,7 @@ exports.deleteDrafts = async () => {
     posts.forEach(async post => {
       if (post.status === "draft") {
         postArray.push(post.title);
-        await api.posts.delete({ id: post.id });
+        await api.posts.delete({ id: post.id }).catch(err => console.log(err));
       }
     });
     return postArray;
@@ -172,7 +184,6 @@ exports.deletePublished = async () => {
 exports.postToGhost = async ghostPost => {
   try {
     const postData = await api.posts.browse();
-    console.log(postData);
     if (postData.meta.pagination.total) {
       const existingPosts = postData.map(post => post.title);
       const duplicate = existingPosts.includes(ghostPost.title);
@@ -182,7 +193,8 @@ exports.postToGhost = async ghostPost => {
           .then(() => `Successfully posted ${ghostPost.title}`)
           .catch(err => `There was an error with ${ghostPost.title}: ${err}`);
       } else {
-        return `Not posted. ${ghostPost.title} is a duplicate.`;
+        console.log(`Not posted. ${ghostPost.title} is a duplicate.`);
+        return;
       }
     }
     api.posts
