@@ -26,9 +26,9 @@ const obj = async url => {
   return res;
 };
 
-obj(config.europeJournal.url).then(res => {
+obj(config.kantianReview.url).then(res => {
   res.forEach(item => {
-    const article = new Article(item, config.europeJournal.color).ghostObject;
+    const article = new Article(item, config.kantianReview.color).ghostObject;
     postToGhost(article);
   });
 });
@@ -37,3 +37,5 @@ obj(config.europeJournal.url).then(res => {
 // Efficient posting [put into an array and then post array]
 // Get current posts and then delete
 // Pagination for multiple posts on client
+
+// Paths -> Just RSS, RSS then HTML // specific configs for each

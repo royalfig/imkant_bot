@@ -1,5 +1,6 @@
-//make the call and get the data ready
 require("dotenv").config();
+
+// Ghost Admin API
 const apiKey = process.env.GHOST;
 const GhostAdminAPI = require("@tryghost/admin-api");
 const api = new GhostAdminAPI({
@@ -8,9 +9,12 @@ const api = new GhostAdminAPI({
     "5e8a31393d8dcc04f1e1918a:2dbc752fff4a2eb3cea79ee663bd546c015253ada54fa89f5b281d59654e0332",
   version: "v3"
 });
+
 // RSS
 let Parser = require("rss-parser");
 let parser = new Parser();
+
+// Metadata Parser
 
 /* Default metadata 
 __Field	Description__
@@ -24,7 +28,6 @@ type:	The type of content as defined by opengraph.
 url:	A canonical URL for the page.
 */
 
-// Metadata
 const { getMetadata, metadataRuleSets } = require("page-metadata-parser");
 const domino = require("domino");
 const axios = require("axios").default;
@@ -77,7 +80,6 @@ const customDOIRuleSet = {
 metadataRuleSets.doi = customDOIRuleSet;
 
 // Extend Description (abstract)
-
 const customAbstractRuleSet = {
   rules: [
     [
@@ -120,6 +122,11 @@ const getArticleTags = doc => {
   return null;
 };
 
+const getPostsFromGhost = async () =>
+  await api.posts.browse({ limit: "all" }).catch(err => console.log(err));
+
+exports.getPostsFromGhost = getPostsFromGhost;
+
 exports.getData = async url => {
   try {
     const feed = await getRss(url);
@@ -140,19 +147,18 @@ exports.getData = async url => {
   }
 };
 
-exports.getPosts = async () => {
-  const posts = await api.posts.browse();
-  if (posts.meta.pagination.total) {
-    const postArray = [];
-    posts.forEach(post => postArray.push(post.title));
+const getPostTitles = async () => {
+  const data = await getPostsFromGhost();
+  if (data.meta.pagination.total) {
+    const postArray = data.map(post => post.title);
     return postArray;
-  } else {
-    return ["No posts!"];
   }
+  return ["No posts!"];
 };
 
+exports.getPostTitles = getPostTitles;
+
 exports.deleteDrafts = async () => {
-  const posts = await api.posts.browse();
   if (posts.meta.pagination.total) {
     const postArray = [];
     posts.forEach(async post => {
@@ -168,7 +174,6 @@ exports.deleteDrafts = async () => {
 };
 
 exports.deletePublished = async () => {
-  const posts = await api.posts.browse();
   if (posts.meta.pagination.total) {
     const postArray = [];
     posts.forEach(post => {
@@ -183,9 +188,8 @@ exports.deletePublished = async () => {
 
 exports.postToGhost = async ghostPost => {
   try {
-    const postData = await api.posts.browse();
-    if (postData.meta.pagination.total) {
-      const existingPosts = postData.map(post => post.title);
+    if (posts.meta.pagination.total) {
+      const existingPosts = getPostsFromGhost.map(post => post.title);
       const duplicate = existingPosts.includes(ghostPost.title);
       if (!duplicate) {
         api.posts
@@ -193,15 +197,17 @@ exports.postToGhost = async ghostPost => {
           .then(() => `Successfully posted ${ghostPost.title}`)
           .catch(err => `There was an error with ${ghostPost.title}: ${err}`);
       } else {
-        console.log(`Not posted. ${ghostPost.title} is a duplicate.`);
-        return;
+        return `Not posted. ${ghostPost.title} is a duplicate.`;
       }
     }
-    api.posts
-      .add(ghostPost)
-      .then(() => `Successfully posted ${ghostPost.title}`)
-      .catch(err => `There was an error with ${ghostPost.title}: ${err}`);
   } catch (err) {
-    console.log(err);
+    return `There was an error with ${ghostPost.title}: ${err}`);
   }
+};
+
+exports.testPost = async postData => {
+  api.posts
+    .add(postData)
+    .then(() => console.log("success"))
+    .catch(e => console.log(e));
 };
