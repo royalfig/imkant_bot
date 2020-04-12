@@ -20,26 +20,6 @@ const getPostTitles = async () => {
   return ["No posts!"];
 };
 
-const getData = async (url) => {
-  try {
-    const feed = await getRss(url);
-    const linkArray = feed.items.map((item) => item.link);
-
-    const promises = linkArray.map(async (item) => {
-      const { data } = await axios.get(item);
-      const doc = domino.createWindow(data).document;
-      const articleTags = getArticleTags(doc);
-      const metadata = getMetadata(doc, url);
-      metadata.tags = articleTags;
-      return metadata;
-    });
-    const dataArray = await Promise.all(promises);
-    return dataArray;
-  } catch (err) {
-    console.log(err, err.context);
-  }
-};
-
 const deletePosts = async (input) => {
   try {
     const filterDataForDrafts(arrayOfPosts) {
@@ -69,6 +49,12 @@ const deletePosts = async (input) => {
   }
 };
 
+const getNewData = async (source) => {
+  // find source and get config
+  // post new data to ghost
+  // return results to client
+}
+
 const postToGhost = async (ghostPost) => {
   try {
     if (posts.meta.pagination.total) {
@@ -90,6 +76,5 @@ const postToGhost = async (ghostPost) => {
 
 exports.getPostsFromGhost = getPostsFromGhost;
 exports.getPostTitles = getPostTitles;
-exports.getData = getData;
 exports.deletePosts = deletePosts;
 exports.postToGhost = postToGhost;

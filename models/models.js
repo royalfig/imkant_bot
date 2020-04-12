@@ -1,3 +1,5 @@
+const stripMarkUp = require("../utils/parser");
+
 //Local
 const months = [
   "January",
@@ -11,65 +13,57 @@ const months = [
   "September",
   "October",
   "November",
-  "December"
+  "December",
 ];
 
 class Article {
   constructor(data, color) {
-    // basic metainfo
-    this.test = console.log(data);
-
-    this.url = data.url;
+    // default info
     this.featureImage =
-      `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${color}&img="` +
+      `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${color}&img=` +
       Date.now();
-    this.image = data.image;
 
-    // citation info
-    this.author = data.author;
-    this.title = this.createTitleOptions(data.title).shortTitle;
-    this.fulltitle = this.createTitleOptions(data.title).formattedTitle;
-    this.journalTitle = data.journalTitle;
-    this.volume = data.volume;
-    this.issue = data.issue;
-    this.firstpage = data.firstpage;
-    this.lastpage = data.lastpage;
-    this.date = data.date;
-    this.tags = data.tags;
-
-    this.doi = "https://doi.org/" + data.doi;
+    // info provided by parser
     this.abstract = data.abstract;
+    this.author = data.author;
+    this.date = data.date;
+    this.firstpage = data.firstpage;
+    this.image = data.image;
+    this.issue = data.issue;
+    this.journalTitle = data.journalTitle;
+    this.keywords = data.keywords;
+    this.lastpage = data.lastpage;
+    this.url = data.url;
+    this.volume = data.volume;
 
-    // modified info
+    // Data modified and other values
     this.bookReview = this.createTitleOptions(data.title).bookReview;
-    this.keywords = data.customKeywords;
+    this.doi = "https://doi.org/" + data.doi;
+    this.keywordArray = this.keywordArrayCreator(data.keywords);
+    this.longTitle = this.createTitleOptions(data.title).longTitle;
+    this.shortAbstract = this.shortenAbstract(stripMarkUp(this.abstract));
+    this.shortTitle = this.createTitleOptions(data.title).shortTitle;
 
-    this.keywordArray = this.keywordArrayCreator(
-      data.tags,
-      data.customKeywords
-    );
-    this.shortAbstract = this.shortenAbstract(this.abstract);
-    this.html = this.createPostContent();
-    this.ghostObject = this.createGhostObject();
-    // this.test = console.log(this.ghostObject);
+    // Create content and post model
+    this.mobiledoc = this.createPostContent();
+    this.ghostModel = this.createGhostModel();
   }
 
+  // Methods
   createTitleOptions(title) {
     if (title === undefined) {
       return {
-        formattedTitle: "no title",
+        longTitle: "no title",
         shortTitle: "no title",
-        bookReview: "no title"
+        bookReview: "no title",
       };
     }
-    let formattedTitle = this.stripMarkUp(
-      title.replace(/([a-z])([A-Z])/g, "$1 $2")
-    );
+    let longTitle = stripMarkUp(title.replace(/([a-z])([A-Z])/g, "$1 $2"));
     const bookReview = /Seiten?|Pages?|Pp\.?/gi.test(formattedTitle);
 
-    let shortTitle = formattedTitle;
+    let shortTitle = longTitle;
     if (bookReview) {
-      const bookReviewArray = formattedTitle.split(":");
+      const bookReviewArray = longTitle.split(":");
       const bookReviewTitle = bookReviewArray[1];
       const bookReviewAuthor = bookReviewArray[0];
       const createdBookReviewTitle =
@@ -77,11 +71,11 @@ class Article {
       shortTitle = createdBookReviewTitle;
     }
 
-    if (formattedTitle.length > 255 && !bookReview) {
-      shortTitle = formattedTitle.substring(0, 255);
+    if (longTitle.length > 255 && !bookReview) {
+      shortTitle = longTitle.substring(0, 255);
     }
 
-    const titleObject = { formattedTitle, shortTitle, bookReview };
+    const titleObject = { longTitle, shortTitle, bookReview };
     return titleObject;
   }
 
@@ -108,12 +102,16 @@ class Article {
       newArray = keywords ? keywords.split(";") : [];
     }
 
+    const capFirstLetter = newArray.map((tag) => {
+      tag.toLowerCase().replace(/\b(\w)/g, (match) => match.toUpperCase());
+    });
+
     if (this.bookReview) {
-      newArray.push(this.journalTitle, "Book Review");
+      capFirstLetter.push(this.journalTitle, "Book Review");
     } else {
-      newArray.push(this.journalTitle, "Article");
+      capFirstLetter.push(this.journalTitle, "Article");
     }
-    return newArray;
+    return capFirstLetter;
   }
 
   createPostContent() {
@@ -148,7 +146,7 @@ class Article {
       markups: [],
       atoms: [],
       cards: [["html", { cardName: "html", html: html }]],
-      sections: [[10, 0]]
+      sections: [[10, 0]],
     });
 
     return mobiledoc;
@@ -160,21 +158,17 @@ class Article {
 
   createGhostObject() {
     const objToPost = {
-      title: this.title,
+      title: this.shorTitle,
       published_at: this.createDate(this.date).publishedDate,
-      mobiledoc: this.html,
+      mobiledoc: this.mobiledoc,
       tags: this.keywordArray,
       feature_image: this.featureImage,
       authors: ["rfeigenb@nd.edu"],
       custom_excerpt: this.shortAbstract,
       excerpt: this.shortAbstract,
-      meta_description: this.shortAbstract
+      meta_description: this.shortAbstract,
     };
     return objToPost;
-  }
-
-  stripMarkUp(input) {
-    return input.replace(/<.+>/g, "");
   }
 }
 module.exports = Article;

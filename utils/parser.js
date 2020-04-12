@@ -30,7 +30,6 @@ const addCustomRule = (key, keyContent, property, name) => {
 };
 
 // Custom rules
-
 addCustomRule("name", "citation_keywords", "content", "keyword");
 addCustomRule("name", "citation_author", "content", "author");
 addCustomRule("name", "citation_journal_title", "content", "journalTitle");
@@ -100,6 +99,26 @@ const getRss = async (url) => {
   return feed;
 };
 
+const scrapePages = async (urlArray) => {
+  // Build ruleset
+  //
+  //
+  try {
+    const promises = urlArray.map(async (item) => {
+      const { data } = await axios.get(item);
+      const doc = domino.createWindow(data).document;
+      const articleTags = getArticleTags(doc);
+      const metadata = getMetadata(doc, url);
+      metadata.tags = articleTags;
+      return metadata;
+    });
+    const dataArray = await Promise.all(promises);
+    return dataArray;
+  } catch (err) {
+    console.log(err, err.context);
+  }
+};
+
 const getArticleTags = (doc) => {
   const tags = doc.querySelectorAll('meta[property="article:tag"]');
 
@@ -109,3 +128,22 @@ const getArticleTags = (doc) => {
   }
   return null;
 };
+
+const filterForKant = (postArray) => {
+  const regex = RegExp(/Kant/i);
+  const results = postArray.filter(
+    (post) => regex.test(post.title) || regex.test(post.abstract)
+  );
+  return results;
+};
+
+const filterOutFrontMatter = (postArray) => {
+  const regex = RegExp(/Titelseiten/i);
+  const results = postArray.filter((post) => !regex.test(post.title));
+};
+
+const stripMarkUp = (input) => {
+  return input.replace(/<.+?>/g, "").replace(/Abstract/, "");
+};
+
+exports.stripMarkUp = stripMarkUp;
