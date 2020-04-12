@@ -27,92 +27,34 @@ const addCustomRule = (key, keyContent, property, name) => {
     rules: [[meta, (element) => element.getAttribute(property)]],
   };
   metadataRuleSets[name] = rule;
-  console.log("add custom ran");
 };
 
-const setRuleToMetadata = (config) => {
+const setRuleToMetadata = (config, doc, url, color) => {
   const entries = Object.getOwnPropertyNames(config);
 
   entries.forEach((entry) => {
-    switch (config[entry].customRule) {
-      case "function":
-        console.log("run a function");
-        break;
-      case true:
-        const dataArr = config[entry].value;
-        addCustomRule(dataArr[0], dataArr[1], dataArr[2], dataArr[3]);
-        break;
-      case "default":
-        metadataRuleSets[config[entry].value] = metadataRuleSets[entry];
-        break;
+    if (config[entry].customRule === "custom") {
+      const dataArr = config[entry].value;
+      addCustomRule(dataArr[0], dataArr[1], dataArr[2], dataArr[3]);
     }
   });
+
+  const metadata = getMetadata(doc, url);
+
+  entries.forEach((entry) => {
+    if (config[entry].customRule === "tags") {
+      const result = config[entry].value(doc);
+      metadata.keywords = result;
+    }
+
+    if (config[entry].customRule === "image") {
+      const result = config[entry].value(color);
+      metadata.image = result;
+    }
+  });
+
+  return metadata;
 };
-
-// Custom rules
-// addCustomRule("name", "citation_keywords", "content", "keyword");
-// addCustomRule("name", "citation_author", "content", "author");
-// addCustomRule("name", "citation_journal_title", "content", "journalTitle");
-// addCustomRule("name", "citation_firstpage", "content", "firstpage");
-// addCustomRule("name", "citation_lastpage", "content", "lastpage");
-// addCustomRule("name", "citation_volume", "content", "volume");
-// addCustomRule("name", "citation_issue", "content", "issue");
-// addCustomRule("name", "citation_title", "content", "title");
-
-// Add date set
-// const customDateRuleSet = {
-//   rules: [
-//     [
-//       'meta[name="citation_publication_date"]',
-//       (element) => element.getAttribute("content"),
-//     ],
-//     [
-//       'meta[property="article:published_time"]',
-//       (element) => element.getAttribute("content"),
-//     ],
-//   ],
-// };
-// metadataRuleSets.date = customDateRuleSet;
-
-// Add DOI set
-// const customDOIRuleSet = {
-//   rules: [
-//     ['meta[name="citation_doi"]', (element) => element.getAttribute("content")],
-//     [
-//       'meta[property="dc.identifier"]',
-//       (element) => element.getAttribute("content"),
-//     ],
-//   ],
-// };
-// metadataRuleSets.doi = customDOIRuleSet;
-
-// Extend Description (abstract)
-// const customAbstractRuleSet = {
-//   rules: [
-//     [
-//       'meta[property="og:description"]',
-//       (element) => element.getAttribute("content"),
-//     ],
-//     [
-//       'meta[name="citation_abstract"]',
-//       (element) => element.getAttribute("content"),
-//     ],
-//     ['meta[name="description"]', (element) => element.getAttribute("content")],
-//   ],
-// };
-// metadataRuleSets.abstract = customAbstractRuleSet;
-
-// Extend Keywords
-// const customKeywordRuleSet = {
-//   rules: [
-//     [
-//       'meta[name="citation_keywords"]',
-//       (element) => element.getAttribute("content"),
-//     ],
-//     ['meta[name="keywords"]', (element) => element.getAttribute("content")],
-//   ],
-// };
-// metadataRuleSets.customKeywords = customKeywordRuleSet;
 
 const getRss = async (config) => {
   const url = config.url;
@@ -131,8 +73,13 @@ const scrapePages = async (rssURL, config) => {
     const promises = rssURL.map(async (url) => {
       const { data } = await axios.get(url);
       const doc = domino.createWindow(data).document;
-      setRuleToMetadata(config.metadataConfig);
-      const metadata = getMetadata(doc, url);
+
+      const metadata = setRuleToMetadata(
+        config.metadataConfig,
+        doc,
+        url,
+        config.color
+      );
 
       return metadata;
     });
@@ -147,13 +94,13 @@ const getArticleTags = (doc) => {
   const tags = doc.querySelectorAll('meta[property="article:tag"]');
   const arr = tags.map((tag) => tag.getAttribute("content"));
   if (arr.length) {
-    metadata.tags = arr;
+    return arr;
   }
   return null;
 };
 
-const getGenerativeImg = (number) => {
-  metadata.image = `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${number}`;
+const getGenerativeImg = (color) => {
+  return `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${color}`;
 };
 
 const filterForKant = (postArray) => {
@@ -174,6 +121,7 @@ const stripMarkUp = (input) => {
 
 exports.scrapePages = scrapePages;
 exports.getArticleTags = getArticleTags;
+exports.getGenerativeImg = getGenerativeImg;
 exports.addCustomRule = addCustomRule;
 exports.getRss = getRss;
 exports.stripMarkUp = stripMarkUp;

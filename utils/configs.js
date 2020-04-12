@@ -3,6 +3,7 @@ const {
   scrapePages,
   addCustomRule,
   getArticleTags,
+  getGenerativeImg,
 } = require("./parser");
 
 const config = {
@@ -10,47 +11,50 @@ const config = {
     url:
       "https://www.degruyter.com/journalissuetocrss/journals/kant/kant-overview.xml",
     color: "15",
-    rss: true,
+    rss: "custom",
 
     metadataConfig: {
-      abstract: { customRule: "default", value: "description" },
+      abstract: {
+        customRule: "custom",
+        value: ["property", "og:description", "content", "abstract"],
+      },
       author: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_author", "content", "author"],
       },
       date: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_publication_date", "content", "date"],
       },
       doi: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_doi", "content", "doi"],
       },
       firstpage: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_firstpage", "content", "firstpage"],
       },
       image: { customRule: "default", value: "image" },
       issue: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_issue", "content", "issue"],
       },
       journalTitle: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_journal_title", "content", "journalTitle"],
       },
-      keywords: { customRule: "function", value: ["getArticleTags", "doc"] },
+      keywords: { customRule: "tags", value: getArticleTags },
       lastpage: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_lastpage", "content", "lastpage"],
       },
       title: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_title", "content", "title"],
       },
       url: { customRule: "default", value: "url" },
       volume: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_volume", "content", "volume"],
       },
     },
@@ -62,49 +66,49 @@ const config = {
     filter: false,
     metadataConfig: {
       abstract: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_abstract", "content", "abstract"],
       },
       author: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_author", "content", "author"],
       },
       date: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_publication_date", "content", "date"],
       },
       doi: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_doi", "content", "doi"],
       },
       firstpage: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_firstpage", "content", "firstpage"],
       },
-      image: { customRule: "function", value: ["getGenerativeImg", "16"] },
+      image: { customRule: "image", value: getGenerativeImg },
       issue: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_issue", "content", "issue"],
       },
       journalTitle: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_journal_title", "content", "journalTitle"],
       },
       keywords: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_keywords", "content", "keywords"],
       },
       lastpage: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_lastpage", "content", "lastpage"],
       },
       title: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_title", "content", "title"],
       },
       url: { customRule: "default", value: "url" },
       volume: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_volume", "content", "volume"],
       },
     },
@@ -112,16 +116,19 @@ const config = {
   europeanJournalofPhil: {
     url: "https://onlinelibrary.wiley.com/feed/14680378/most-recent",
     color: "14",
-    filter: true,
+    filter: "custom",
 
     metadataConfig: {
-      abstract: { customRule: "default", value: "description" },
+      abstract: {
+        customRule: "custom",
+        value: ["property", "description", "content", "abstract"],
+      },
       author: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_author", "content", "author"],
       },
       authorInstitution: {
-        customRule: true,
+        customRule: "custom",
         value: [
           "name",
           "citation_author_institution",
@@ -130,41 +137,41 @@ const config = {
         ],
       },
       date: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_online_date", "content", "date"],
       },
       doi: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_doi", "content", "doi"],
       },
       firstpage: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_firstpage", "content", "firstpage"],
       },
       image: { customRule: "default", value: "image" },
       issue: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_issue", "content", "issue"],
       },
       journalTitle: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_journal_title", "content", "journalTitle"],
       },
       keywords: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_keywords", "content", "keywords"],
       },
       lastpage: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_lastpage", "content", "lastpage"],
       },
       title: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_title", "content", "title"],
       },
       url: { customRule: "default", value: "url" },
       volume: {
-        customRule: true,
+        customRule: "custom",
         value: ["name", "citation_volume", "content", "volume"],
       },
     },
