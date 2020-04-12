@@ -30,76 +30,84 @@ const addCustomRule = (key, keyContent, property, name) => {
 };
 
 // Custom rules
-addCustomRule("name", "citation_keywords", "content", "keyword");
-addCustomRule("name", "citation_author", "content", "author");
-addCustomRule("name", "citation_journal_title", "content", "journalTitle");
-addCustomRule("name", "citation_firstpage", "content", "firstpage");
-addCustomRule("name", "citation_lastpage", "content", "lastpage");
-addCustomRule("name", "citation_volume", "content", "volume");
-addCustomRule("name", "citation_issue", "content", "issue");
-addCustomRule("name", "citation_title", "content", "title");
+// addCustomRule("name", "citation_keywords", "content", "keyword");
+// addCustomRule("name", "citation_author", "content", "author");
+// addCustomRule("name", "citation_journal_title", "content", "journalTitle");
+// addCustomRule("name", "citation_firstpage", "content", "firstpage");
+// addCustomRule("name", "citation_lastpage", "content", "lastpage");
+// addCustomRule("name", "citation_volume", "content", "volume");
+// addCustomRule("name", "citation_issue", "content", "issue");
+// addCustomRule("name", "citation_title", "content", "title");
 
 // Add date set
-const customDateRuleSet = {
-  rules: [
-    [
-      'meta[name="citation_publication_date"]',
-      (element) => element.getAttribute("content"),
-    ],
-    [
-      'meta[property="article:published_time"]',
-      (element) => element.getAttribute("content"),
-    ],
-  ],
-};
-metadataRuleSets.date = customDateRuleSet;
+// const customDateRuleSet = {
+//   rules: [
+//     [
+//       'meta[name="citation_publication_date"]',
+//       (element) => element.getAttribute("content"),
+//     ],
+//     [
+//       'meta[property="article:published_time"]',
+//       (element) => element.getAttribute("content"),
+//     ],
+//   ],
+// };
+// metadataRuleSets.date = customDateRuleSet;
 
 // Add DOI set
-const customDOIRuleSet = {
-  rules: [
-    ['meta[name="citation_doi"]', (element) => element.getAttribute("content")],
-    [
-      'meta[property="dc.identifier"]',
-      (element) => element.getAttribute("content"),
-    ],
-  ],
-};
-metadataRuleSets.doi = customDOIRuleSet;
+// const customDOIRuleSet = {
+//   rules: [
+//     ['meta[name="citation_doi"]', (element) => element.getAttribute("content")],
+//     [
+//       'meta[property="dc.identifier"]',
+//       (element) => element.getAttribute("content"),
+//     ],
+//   ],
+// };
+// metadataRuleSets.doi = customDOIRuleSet;
 
 // Extend Description (abstract)
-const customAbstractRuleSet = {
-  rules: [
-    [
-      'meta[property="og:description"]',
-      (element) => element.getAttribute("content"),
-    ],
-    [
-      'meta[name="citation_abstract"]',
-      (element) => element.getAttribute("content"),
-    ],
-    ['meta[name="description"]', (element) => element.getAttribute("content")],
-  ],
-};
-metadataRuleSets.abstract = customAbstractRuleSet;
+// const customAbstractRuleSet = {
+//   rules: [
+//     [
+//       'meta[property="og:description"]',
+//       (element) => element.getAttribute("content"),
+//     ],
+//     [
+//       'meta[name="citation_abstract"]',
+//       (element) => element.getAttribute("content"),
+//     ],
+//     ['meta[name="description"]', (element) => element.getAttribute("content")],
+//   ],
+// };
+// metadataRuleSets.abstract = customAbstractRuleSet;
 
 // Extend Keywords
-const customKeywordRuleSet = {
-  rules: [
-    [
-      'meta[name="citation_keywords"]',
-      (element) => element.getAttribute("content"),
-    ],
-    ['meta[name="keywords"]', (element) => element.getAttribute("content")],
-  ],
-};
-metadataRuleSets.customKeywords = customKeywordRuleSet;
+// const customKeywordRuleSet = {
+//   rules: [
+//     [
+//       'meta[name="citation_keywords"]',
+//       (element) => element.getAttribute("content"),
+//     ],
+//     ['meta[name="keywords"]', (element) => element.getAttribute("content")],
+//   ],
+// };
+// metadataRuleSets.customKeywords = customKeywordRuleSet;
 
-const getRss = async (url) => {
-  let feed = await parser.parseURL(url);
-  return feed;
+const getRss = async (config) => {
+  const url = config.url;
+  const filterForKantArticles = config.filter;
+  const { items } = await parser.parseURL(url);
+  const feedWithoutExtraneousMaterials = filterOutFrontMatter(items);
+  const filteredFeed = filterForKantArticles
+    ? filterForKant(feedWithoutExtraneousMaterials)
+    : feedWithoutExtraneousMaterials;
+  const rssUrls = filteredFeed.map((item) => item.link);
+  console.log(rssUrls);
+  return rssUrls;
 };
 
-const scrapePages = async (urlArray) => {
+const scrapePages = async (rssURL, config) => {
   // Build ruleset
   //
   //
@@ -131,19 +139,21 @@ const getArticleTags = (doc) => {
 
 const filterForKant = (postArray) => {
   const regex = RegExp(/Kant/i);
-  const results = postArray.filter(
-    (post) => regex.test(post.title) || regex.test(post.abstract)
-  );
+  const results = postArray.filter((post) => regex.test(post.title));
   return results;
 };
 
 const filterOutFrontMatter = (postArray) => {
-  const regex = RegExp(/Titelseiten/i);
+  const regex = RegExp(/Titelseiten|Front Matter|Back Matter/i);
   const results = postArray.filter((post) => !regex.test(post.title));
+  return results;
 };
 
 const stripMarkUp = (input) => {
   return input.replace(/<.+?>/g, "").replace(/Abstract/, "");
 };
 
+exports.getArticleTags = getArticleTags;
+exports.addCustomRule = addCustomRule;
+exports.getRss = getRss;
 exports.stripMarkUp = stripMarkUp;
