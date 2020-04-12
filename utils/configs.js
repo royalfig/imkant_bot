@@ -1,4 +1,9 @@
-const { getRss, addCustomRule, getArticleTags } = require("./parser");
+const {
+  getRss,
+  scrapePages,
+  addCustomRule,
+  getArticleTags,
+} = require("./parser");
 
 const config = {
   kantStudien: {
@@ -8,24 +13,46 @@ const config = {
     rss: true,
 
     metadataConfig: {
-      abstract: "description",
-      author: ["name", "citation_author", "content", "author"],
-      date: ["name", "citation_publication_date", "content", "date"],
-      doi: ["name", "citation_doi", "content", "doi"],
-      firstpage: ["name", "citation_firstpage", "content", "firstpage"],
-      image: "image",
-      issue: ["name", "citation_issue", "content", "issue"],
-      journalTitle: [
-        "name",
-        "citation_journal_title",
-        "content",
-        "journalTitle",
-      ],
-      keywords: "getArticleTags",
-      lastpage: ["name", "citation_lastpage", "content", "lastpage"],
-      title: ["name", "citation_title", "content", "title"],
-      url: "url",
-      volume: ["name", "citation_volume", "content", "volume"],
+      abstract: { customRule: "default", value: "description" },
+      author: {
+        customRule: true,
+        value: ["name", "citation_author", "content", "author"],
+      },
+      date: {
+        customRule: true,
+        value: ["name", "citation_publication_date", "content", "date"],
+      },
+      doi: {
+        customRule: true,
+        value: ["name", "citation_doi", "content", "doi"],
+      },
+      firstpage: {
+        customRule: true,
+        value: ["name", "citation_firstpage", "content", "firstpage"],
+      },
+      image: { customRule: "default", value: "image" },
+      issue: {
+        customRule: true,
+        value: ["name", "citation_issue", "content", "issue"],
+      },
+      journalTitle: {
+        customRule: true,
+        value: ["name", "citation_journal_title", "content", "journalTitle"],
+      },
+      keywords: { customRule: "function", value: ["getArticleTags", "doc"] },
+      lastpage: {
+        customRule: true,
+        value: ["name", "citation_lastpage", "content", "lastpage"],
+      },
+      title: {
+        customRule: true,
+        value: ["name", "citation_title", "content", "title"],
+      },
+      url: { customRule: "default", value: "url" },
+      volume: {
+        customRule: true,
+        value: ["name", "citation_volume", "content", "volume"],
+      },
     },
   },
   kantianReview: {
@@ -34,26 +61,52 @@ const config = {
     color: "16",
     filter: false,
     metadataConfig: {
-      abstract: ["name", "citation_abstract", "content", "abstract"],
-      author: ["name", "citation_author", "content", "author"],
-      date: ["name", "citation_publication_date", "content", "date"],
-      doi: ["name", "citation_doi", "content", "doi"],
-      firstpage: ["name", "citation_firstpage", "content", "firstpage"],
-      image:
-        "https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=16&img=" +
-        Date.now(),
-      issue: ["name", "citation_issue", "content", "issue"],
-      journalTitle: [
-        "name",
-        "citation_journal_title",
-        "content",
-        "journalTitle",
-      ],
-      keywords: ["name", "citation_keywords", "content", "keywords"],
-      lastpage: ["name", "citation_lastpage", "content", "lastpage"],
-      title: ["name", "citation_title", "content", "title"],
-      url: "url",
-      volume: ["name", "citation_volume", "content", "volume"],
+      abstract: {
+        customRule: true,
+        value: ["name", "citation_abstract", "content", "abstract"],
+      },
+      author: {
+        customRule: true,
+        value: ["name", "citation_author", "content", "author"],
+      },
+      date: {
+        customRule: true,
+        value: ["name", "citation_publication_date", "content", "date"],
+      },
+      doi: {
+        customRule: true,
+        value: ["name", "citation_doi", "content", "doi"],
+      },
+      firstpage: {
+        customRule: true,
+        value: ["name", "citation_firstpage", "content", "firstpage"],
+      },
+      image: { customRule: "function", value: ["getGenerativeImg", "16"] },
+      issue: {
+        customRule: true,
+        value: ["name", "citation_issue", "content", "issue"],
+      },
+      journalTitle: {
+        customRule: true,
+        value: ["name", "citation_journal_title", "content", "journalTitle"],
+      },
+      keywords: {
+        customRule: true,
+        value: ["name", "citation_keywords", "content", "keywords"],
+      },
+      lastpage: {
+        customRule: true,
+        value: ["name", "citation_lastpage", "content", "lastpage"],
+      },
+      title: {
+        customRule: true,
+        value: ["name", "citation_title", "content", "title"],
+      },
+      url: { customRule: "default", value: "url" },
+      volume: {
+        customRule: true,
+        value: ["name", "citation_volume", "content", "volume"],
+      },
     },
   },
   europeanJournalofPhil: {
@@ -62,30 +115,58 @@ const config = {
     filter: true,
 
     metadataConfig: {
-      abstract: "description",
-      author: ["name", "citation_author", "content", "author"],
-      authorInstitution: [
-        "name",
-        "citation_author_institution",
-        "content",
-        "institution",
-      ],
-      date: ["name", "citation_online_date", "content", "date"],
-      doi: ["name", "citation_doi", "content", "doi"],
-      firstpage: ["name", "citation_firstpage", "content", "firstpage"],
-      image: "image",
-      issue: ["name", "citation_issue", "content", "issue"],
-      journalTitle: [
-        "name",
-        "citation_journal_title",
-        "content",
-        "journalTitle",
-      ],
-      keywords: ["name", "citation_keywords", "content", "keywords"],
-      lastpage: ["name", "citation_lastpage", "content", "lastpage"],
-      title: ["name", "citation_title", "content", "title"],
-      url: "url",
-      volume: ["name", "citation_volume", "content", "volume"],
+      abstract: { customRule: "default", value: "description" },
+      author: {
+        customRule: true,
+        value: ["name", "citation_author", "content", "author"],
+      },
+      authorInstitution: {
+        customRule: true,
+        value: [
+          "name",
+          "citation_author_institution",
+          "content",
+          "institution",
+        ],
+      },
+      date: {
+        customRule: true,
+        value: ["name", "citation_online_date", "content", "date"],
+      },
+      doi: {
+        customRule: true,
+        value: ["name", "citation_doi", "content", "doi"],
+      },
+      firstpage: {
+        customRule: true,
+        value: ["name", "citation_firstpage", "content", "firstpage"],
+      },
+      image: { customRule: "default", value: "image" },
+      issue: {
+        customRule: true,
+        value: ["name", "citation_issue", "content", "issue"],
+      },
+      journalTitle: {
+        customRule: true,
+        value: ["name", "citation_journal_title", "content", "journalTitle"],
+      },
+      keywords: {
+        customRule: true,
+        value: ["name", "citation_keywords", "content", "keywords"],
+      },
+      lastpage: {
+        customRule: true,
+        value: ["name", "citation_lastpage", "content", "lastpage"],
+      },
+      title: {
+        customRule: true,
+        value: ["name", "citation_title", "content", "title"],
+      },
+      url: { customRule: "default", value: "url" },
+      volume: {
+        customRule: true,
+        value: ["name", "citation_volume", "content", "volume"],
+      },
     },
   },
 };
@@ -93,4 +174,10 @@ const config = {
 // getRSS  -> Returns feed
 // filter feed
 
-getRss(config.kantianReview);
+const s = async () => {
+  const rss = await getRss(config.kantianReview);
+  const result = await scrapePages(rss, config.kantianReview);
+  console.log(result);
+};
+
+s();

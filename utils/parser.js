@@ -27,6 +27,26 @@ const addCustomRule = (key, keyContent, property, name) => {
     rules: [[meta, (element) => element.getAttribute(property)]],
   };
   metadataRuleSets[name] = rule;
+  console.log("add custom ran");
+};
+
+const setRuleToMetadata = (config) => {
+  const entries = Object.getOwnPropertyNames(config);
+
+  entries.forEach((entry) => {
+    switch (config[entry].customRule) {
+      case "function":
+        console.log("run a function");
+        break;
+      case true:
+        const dataArr = config[entry].value;
+        addCustomRule(dataArr[0], dataArr[1], dataArr[2], dataArr[3]);
+        break;
+      case "default":
+        metadataRuleSets[config[entry].value] = metadataRuleSets[entry];
+        break;
+    }
+  });
 };
 
 // Custom rules
@@ -103,21 +123,17 @@ const getRss = async (config) => {
     ? filterForKant(feedWithoutExtraneousMaterials)
     : feedWithoutExtraneousMaterials;
   const rssUrls = filteredFeed.map((item) => item.link);
-  console.log(rssUrls);
   return rssUrls;
 };
 
 const scrapePages = async (rssURL, config) => {
-  // Build ruleset
-  //
-  //
   try {
-    const promises = urlArray.map(async (item) => {
-      const { data } = await axios.get(item);
+    const promises = rssURL.map(async (url) => {
+      const { data } = await axios.get(url);
       const doc = domino.createWindow(data).document;
-      const articleTags = getArticleTags(doc);
+      setRuleToMetadata(config.metadataConfig);
       const metadata = getMetadata(doc, url);
-      metadata.tags = articleTags;
+
       return metadata;
     });
     const dataArray = await Promise.all(promises);
@@ -129,12 +145,15 @@ const scrapePages = async (rssURL, config) => {
 
 const getArticleTags = (doc) => {
   const tags = doc.querySelectorAll('meta[property="article:tag"]');
-
   const arr = tags.map((tag) => tag.getAttribute("content"));
   if (arr.length) {
-    return arr;
+    metadata.tags = arr;
   }
   return null;
+};
+
+const getGenerativeImg = (number) => {
+  metadata.image = `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${number}`;
 };
 
 const filterForKant = (postArray) => {
@@ -153,6 +172,7 @@ const stripMarkUp = (input) => {
   return input.replace(/<.+?>/g, "").replace(/Abstract/, "");
 };
 
+exports.scrapePages = scrapePages;
 exports.getArticleTags = getArticleTags;
 exports.addCustomRule = addCustomRule;
 exports.getRss = getRss;
