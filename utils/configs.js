@@ -1,13 +1,7 @@
-const {
-  getRss,
-  scrapePages,
-  addCustomRule,
-  getArticleTags,
-  getGenerativeImg,
-} = require("./parser");
+const { getArticleTags, getGenerativeImg } = require("./parser");
 
-const config = {
-  kantStudien: {
+module.exports.config = {
+  kant_studien: {
     url:
       "https://www.degruyter.com/journalissuetocrss/journals/kant/kant-overview.xml",
     color: "15",
@@ -59,15 +53,16 @@ const config = {
       },
     },
   },
-  kantianReview: {
+  kantian_review: {
     url:
       "https://www.cambridge.org/core/rss/product/id/D3E55E88C6269FFD657D4E68B193ADAB",
     color: "16",
     filter: false,
+    bookReviewSplit: [",", ","],
     metadataConfig: {
       abstract: {
         customRule: "custom",
-        value: ["name", "citation_abstract", "content", "abstract"],
+        value: ["name", "description", "content", "abstract"],
       },
       author: {
         customRule: "custom",
@@ -113,7 +108,7 @@ const config = {
       },
     },
   },
-  europeanJournalofPhil: {
+  european_journal_of_philosophy: {
     url: "https://onlinelibrary.wiley.com/feed/14680378/most-recent",
     color: "14",
     filter: "custom",
@@ -177,14 +172,3 @@ const config = {
     },
   },
 };
-
-// getRSS  -> Returns feed
-// filter feed
-
-const s = async () => {
-  const rss = await getRss(config.kantianReview);
-  const result = await scrapePages(rss, config.kantianReview);
-  console.log(result);
-};
-
-s();

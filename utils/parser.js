@@ -60,12 +60,16 @@ const getRss = async (config) => {
   const url = config.url;
   const filterForKantArticles = config.filter;
   const { items } = await parser.parseURL(url);
+  console.log(items);
+
   const feedWithoutExtraneousMaterials = filterOutFrontMatter(items);
   const filteredFeed = filterForKantArticles
     ? filterForKant(feedWithoutExtraneousMaterials)
     : feedWithoutExtraneousMaterials;
+
   const rssUrls = filteredFeed.map((item) => item.link);
-  return rssUrls;
+  const uniqueUrls = [...new Set(rssUrls)];
+  return uniqueUrls;
 };
 
 const scrapePages = async (rssURL, config) => {

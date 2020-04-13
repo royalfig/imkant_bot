@@ -1,4 +1,4 @@
-const stripMarkUp = require("../utils/parser");
+const { stripMarkUp } = require("../utils/parser");
 
 //Local
 const months = [
@@ -31,7 +31,6 @@ class Article {
     this.image = data.image;
     this.issue = data.issue;
     this.journalTitle = data.journalTitle;
-    this.keywords = data.keywords;
     this.lastpage = data.lastpage;
     this.url = data.url;
     this.volume = data.volume;
@@ -59,19 +58,21 @@ class Article {
       };
     }
     let longTitle = stripMarkUp(title.replace(/([a-z])([A-Z])/g, "$1 $2"));
-    const bookReview = /Seiten?|Pages?|Pp\.?/gi.test(formattedTitle);
+
+    const bookReview = /Seiten?|Pages?|Pp\.?/gi.test(longTitle);
 
     let shortTitle = longTitle;
-    if (bookReview) {
-      const bookReviewArray = longTitle.split(":");
-      const bookReviewTitle = bookReviewArray[1];
-      const bookReviewAuthor = bookReviewArray[0];
-      const createdBookReviewTitle =
-        bookReviewTitle + " by " + bookReviewAuthor;
-      shortTitle = createdBookReviewTitle;
-    }
 
-    if (longTitle.length > 255 && !bookReview) {
+    // if (bookReview) {
+    //   const bookReviewArray = longTitle.split(":");
+    //   const bookReviewTitle = bookReviewArray[1];
+    //   const bookReviewAuthor = bookReviewArray[0];
+    //   const createdBookReviewTitle =
+    //     bookReviewTitle + " by " + bookReviewAuthor;
+    //   shortTitle = createdBookReviewTitle;
+    // }
+
+    if (longTitle.length > 255) {
       shortTitle = longTitle.substring(0, 255);
     }
 
@@ -94,24 +95,34 @@ class Article {
     return { formattedDate, publishedDate };
   }
 
-  keywordArrayCreator(tagArray, keywords) {
-    let newArray = [];
-    if (tagArray) {
-      newArray = tagArray;
-    } else {
-      newArray = keywords ? keywords.split(";") : [];
+  keywordArrayCreator(keywords) {
+    if (!keywords) {
+      return [];
     }
 
-    const capFirstLetter = newArray.map((tag) => {
-      tag.toLowerCase().replace(/\b(\w)/g, (match) => match.toUpperCase());
-    });
+    const keywordFormatter = (arr) => {
+      const capFirstLetter = arr.map((tag) =>
+        tag
+          .toLowerCase()
+          .trim()
+          .replace(/\b(\w)/g, (match) => match.toUpperCase())
+      );
+      if (this.bookReview) {
+        capFirstLetter.push("Book Review", this.journalTitle);
+        return capFirstLetter;
+      }
+      capFirstLetter.push("Article", this.journalTitle);
+      return capFirstLetter;
+    };
 
-    if (this.bookReview) {
-      capFirstLetter.push(this.journalTitle, "Book Review");
+    if (Array.isArray(keywords)) {
+      const result = keywordFormatter(keywords);
+      return result;
     } else {
-      capFirstLetter.push(this.journalTitle, "Article");
+      let newArray = keywords.split(";");
+      const formattedArray = keywordFormatter(newArray);
+      return formattedArray;
     }
-    return capFirstLetter;
   }
 
   createPostContent() {
@@ -126,13 +137,13 @@ class Article {
         <div class="media__left">
           <a href="${this.url}">
             <figure class="media__img-container">
-              <img class="media__img" src="${img}" alt="${this.fulltitle}"/>
+              <img class="media__img" src="${img}" alt="${this.shortTitle}"/>
             </figure>
           </a>
         </div>
         <div class="media__right">
           <div class="media__content">
-            <p>${this.author} published <a href="${this.url}">&ldquo;${this.fulltitle}&rdquo;</a> on ${formattedDate} in <em>${this.journalTitle}</em> ${this.volume}.${this.issue}: ${this.firstpage}-${this.lastpage}. <a href="${this.doi}">${this.doi}</a>.</p>
+            <p>${this.author} published <a href="${this.url}">&ldquo;${this.longTitle}&rdquo;</a> on ${formattedDate} in <em>${this.journalTitle}</em> ${this.volume}.${this.issue}: ${this.firstpage}-${this.lastpage}. <a href="${this.doi}">${this.doi}</a>.</p>
           </div>
         </div>
       </div>`;
@@ -156,9 +167,9 @@ class Article {
     return input.substring(0, 300);
   }
 
-  createGhostObject() {
+  createGhostModel() {
     const objToPost = {
-      title: this.shorTitle,
+      title: this.shortTitle,
       published_at: this.createDate(this.date).publishedDate,
       mobiledoc: this.mobiledoc,
       tags: this.keywordArray,

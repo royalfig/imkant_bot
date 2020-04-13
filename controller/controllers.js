@@ -8,6 +8,12 @@ const api = new GhostAdminAPI({
   version: "v3",
 });
 
+const fs = require("fs");
+const path = require("path");
+
+const { getRss, scrapePages } = require("../utils/parser");
+const Article = require("../models/models");
+
 const getPostsFromGhost = async () =>
   await api.posts.browse({ limit: "all" }).catch((err) => console.log(err));
 
@@ -21,57 +27,63 @@ const getPostTitles = async () => {
 };
 
 const deletePosts = async (input) => {
+  const filterDataForDrafts = (postArr) => {
+    const filteredData = postArr.filter((post) => post.status === "draft");
+    return filteredData;
+  };
   try {
-    const filterDataForDrafts(arrayOfPosts) {
-      const draftPosts = arrayOfPosts.filter(post => post.status === "draft");
-      return draftPosts;
-    } 
     const data = await getPostsFromGhost();
-    let filteredData = input === 'drafts' ? filterDataForDrafts(data): data;
-
+    let filteredData = input === "drafts" ? filterDataForDrafts(data) : data;
     if (data.meta.pagination.total) {
-      const promises = await filteredData.map(async post => {
-          const deletedPost = await api.posts
-            .delete({ id: post.id })
-            .then((res) => res.title)
-            .catch((err) => err);
-          return deletedPost;
+      const promises = await filteredData.map(async (post) => {
+        return (deletedPost = await api.posts
+          .delete({ id: post.id })
+          .then(() => post.title)
+          .catch((e) => e));
       });
 
       const deletedPosts = await Promise.all(promises);
-
       return deletedPosts;
     } else {
-      return ["No draft posts to delete!"];
+      return ["No posts to delete!"];
     }
   } catch (err) {
     console.log(err);
   }
 };
 
-const getNewData = async (source) => {
-  // find source and get config
-  // post new data to ghost
-  // return results to client
-}
+const postToGhost = async (source) => {
+  const existingPostTitles = await getPostTitles();
+  const rss = await getRss(source);
+  const result = await scrapePages(rss, source);
+  const arts = result.map((item) => new Article(item, source.color));
 
-const postToGhost = async (ghostPost) => {
-  try {
-    if (posts.meta.pagination.total) {
-      const existingPosts = getPostsFromGhost.map((post) => post.title);
-      const duplicate = existingPosts.includes(ghostPost.title);
-      if (!duplicate) {
-        api.posts
-          .add(ghostPost)
-          .then(() => `Successfully posted ${ghostPost.title}`)
-          .catch((err) => `There was an error with ${ghostPost.title}: ${err}`);
-      } else {
-        return `Not posted. ${ghostPost.title} is a duplicate.`;
+  // Log fetched models
+  const date = `${
+    new Date().getMonth() + 1
+  }-${new Date().getDate()}-${new Date().getFullYear()}`;
+  const filename = `log-${date}.txt`;
+  arts.forEach((item, idx) => {
+    fs.appendFileSync(
+      path.join(process.cwd(), "logs", filename),
+      "\n" + idx + ". " + item.ghostModel.title + "\n",
+      (err) => {
+        console.log(err);
       }
-    }
-  } catch (err) {
-    return `There was an error with ${ghostPost.title}: ${err}`;
-  }
+    );
+  });
+
+  // Post to ghost db
+  const dedupedArr = arts.filter(
+    (item) => !existingPostTitles.includes(item.title)
+  );
+  dedupedArr.map((item) => {
+    api.posts
+      .add(item.ghostModel)
+      .then((res) => res.title)
+      .catch((e) => console.log(e));
+  });
+  return dedupedArr;
 };
 
 exports.getPostsFromGhost = getPostsFromGhost;
