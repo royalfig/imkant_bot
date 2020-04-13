@@ -29,7 +29,7 @@ const addCustomRule = (key, keyContent, property, name) => {
   metadataRuleSets[name] = rule;
 };
 
-const setRuleToMetadata = (config, doc, url, color) => {
+const setRuleToMetadata = async (config, doc, url, color) => {
   const entries = Object.getOwnPropertyNames(config);
 
   entries.forEach((entry) => {
@@ -60,16 +60,15 @@ const getRss = async (config) => {
   const url = config.url;
   const filterForKantArticles = config.filter;
   const { items } = await parser.parseURL(url);
-  console.log(items);
 
   const feedWithoutExtraneousMaterials = filterOutFrontMatter(items);
   const filteredFeed = filterForKantArticles
     ? filterForKant(feedWithoutExtraneousMaterials)
     : feedWithoutExtraneousMaterials;
-
   const rssUrls = filteredFeed.map((item) => item.link);
   const uniqueUrls = [...new Set(rssUrls)];
-  return uniqueUrls;
+  const moddedUrls = uniqueUrls.map((url) => url.replace(/\?af=R/, ""));
+  return moddedUrls;
 };
 
 const scrapePages = async (rssURL, config) => {
@@ -77,17 +76,16 @@ const scrapePages = async (rssURL, config) => {
     const promises = rssURL.map(async (url) => {
       const { data } = await axios.get(url);
       const doc = domino.createWindow(data).document;
-
-      const metadata = setRuleToMetadata(
+      const metadata = await setRuleToMetadata(
         config.metadataConfig,
         doc,
         url,
         config.color
       );
-
       return metadata;
     });
     const dataArray = await Promise.all(promises);
+    console.log(dataArray);
     return dataArray;
   } catch (err) {
     console.log(err, err.context);

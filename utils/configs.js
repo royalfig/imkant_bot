@@ -111,12 +111,138 @@ module.exports.config = {
   european_journal_of_philosophy: {
     url: "https://onlinelibrary.wiley.com/feed/14680378/most-recent",
     color: "14",
-    filter: "custom",
+    filter: true,
 
     metadataConfig: {
       abstract: {
         customRule: "custom",
-        value: ["property", "description", "content", "abstract"],
+        value: ["property", "og:description", "content", "abstract"],
+      },
+      author: {
+        customRule: "custom",
+        value: ["name", "citation_author", "content", "author"],
+      },
+      authorInstitution: {
+        customRule: "custom",
+        value: [
+          "name",
+          "citation_author_institution",
+          "content",
+          "institution",
+        ],
+      },
+      date: {
+        customRule: "custom",
+        value: ["name", "citation_online_date", "content", "date"],
+      },
+      doi: {
+        customRule: "custom",
+        value: ["name", "citation_doi", "content", "doi"],
+      },
+      firstpage: {
+        customRule: "custom",
+        value: ["name", "citation_firstpage", "content", "firstpage"],
+      },
+      image: { customRule: "default", value: "image" },
+      issue: {
+        customRule: "custom",
+        value: ["name", "citation_issue", "content", "issue"],
+      },
+      journalTitle: {
+        customRule: "custom",
+        value: ["name", "citation_journal_title", "content", "journalTitle"],
+      },
+      keywords: {
+        customRule: "custom",
+        value: ["name", "citation_keywords", "content", "keywords"],
+      },
+      lastpage: {
+        customRule: "custom",
+        value: ["name", "citation_lastpage", "content", "lastpage"],
+      },
+      title: {
+        customRule: "custom",
+        value: ["name", "citation_title", "content", "title"],
+      },
+      url: { customRule: "default", value: "url" },
+      volume: {
+        customRule: "custom",
+        value: ["name", "citation_volume", "content", "volume"],
+      },
+    },
+  },
+  canadian_journal_of_philosophy: {
+    url: "https://www.tandfonline.com/feed/rss/rcjp20",
+    color: "13",
+    filter: true,
+
+    metadataConfig: {
+      abstract: {
+        customRule: "custom",
+        value: ["property", "og:description", "content", "abstract"],
+      },
+      author: {
+        customRule: "custom",
+        value: ["name", "citation_author", "content", "author"],
+      },
+      authorInstitution: {
+        customRule: "custom",
+        value: [
+          "name",
+          "citation_author_institution",
+          "content",
+          "institution",
+        ],
+      },
+      date: {
+        customRule: "custom",
+        value: ["name", "citation_online_date", "content", "date"],
+      },
+      doi: {
+        customRule: "custom",
+        value: ["name", "citation_doi", "content", "doi"],
+      },
+      firstpage: {
+        customRule: "custom",
+        value: ["name", "citation_firstpage", "content", "firstpage"],
+      },
+      image: { customRule: "default", value: "image" },
+      issue: {
+        customRule: "custom",
+        value: ["name", "citation_issue", "content", "issue"],
+      },
+      journalTitle: {
+        customRule: "custom",
+        value: ["name", "citation_journal_title", "content", "journalTitle"],
+      },
+      keywords: {
+        customRule: "custom",
+        value: ["name", "citation_keywords", "content", "keywords"],
+      },
+      lastpage: {
+        customRule: "custom",
+        value: ["name", "citation_lastpage", "content", "lastpage"],
+      },
+      title: {
+        customRule: "custom",
+        value: ["name", "citation_title", "content", "title"],
+      },
+      url: { customRule: "default", value: "url" },
+      volume: {
+        customRule: "custom",
+        value: ["name", "citation_volume", "content", "volume"],
+      },
+    },
+  },
+  british_journal_for_the_history_of_philosophy: {
+    url: "https://www.tandfonline.com/feed/rss/rbjh20",
+    color: "12",
+    filter: true,
+
+    metadataConfig: {
+      abstract: {
+        customRule: "custom",
+        value: ["property", "og:description", "content", "abstract"],
       },
       author: {
         customRule: "custom",

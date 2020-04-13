@@ -28,7 +28,6 @@ app.get("/posts", (req, res) => {
 
 app.get("/bot/:source", (req, res) => {
   const { source } = req.params;
-  console.log(config[source]);
   postToGhost(config[source])
     .then((arr) => res.send(arr))
     .catch((e) => res.send(e));
