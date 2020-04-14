@@ -75,8 +75,6 @@ const getRss = async (config) => {
     const data = [];
     filteredFeed.forEach(async (item) => {
       const metadata = {};
-      const metaresponse = await metaget.fetch(item.link);
-      console.log(metaresponse);
       metadata.journalTitle = config.name;
 
       metadata.author = config.rssConfig.author.do
@@ -178,6 +176,10 @@ const lastFirst = (name) => {
 const toIso = (date) => {
   const isoDate = new Date(date.replace("-", "/")).toISOString();
   return isoDate;
+};
+
+const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 exports.scrapePages = scrapePages;
