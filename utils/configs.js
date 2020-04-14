@@ -16,7 +16,16 @@ module.exports.config = {
     image: "",
     url: "https://www.tandfonline.com/feed/rss/rbjh20",
 
-    metadataConfig: {}, // Problem accessing page ? Cookie
+    metadataConfig: {
+      abstract: { property: ["general", "description"], do: false },
+      author: { property: ["dublinCore", "creator"], do: "removeDoubleSpace" },
+      date: { property: ["dublinCore", "date"], do: "convert 9 Jul 2019" },
+      doi: { property: ["dublinCore", "identifier"], do: "firstItemInArr" },
+      title: { property: ["dublinCore", "title"], do: false },
+      image: { property: ["openGraph", "image"], do: false },
+      keywords: { property: ["dublinCore", "subject"], do: "arraySplitter" },
+      url: { property: ["openGraph", "url"], do: false },
+    },
   },
   british_journal_for_the_philosophy_of_science: {
     name: "British Journal for the Philosophy of Science",
@@ -40,12 +49,12 @@ module.exports.config = {
 
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: lastFirst },
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
         property: ["highwirePress", "author_institution"],
-        do: false,
+        do: "arr?",
       },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
       lastpage: { property: ["highwirePress", "lastpage"], do: false },
@@ -73,19 +82,19 @@ module.exports.config = {
     },
 
     metadataConfig: {
-      abstract: { property: "og:description", do: false },
-      author: { property: "citation_author", do: false },
-      date: { property: "citation_publication_date", do: toIso },
-      doi: { property: "citation_doi", do: false },
-      institution: { property: "citation_author_institution", do: false },
-      firstpage: { property: "citation_firstpage", do: false },
-      lastpage: { property: "citation_lastpage", do: false },
-      keywords: { property: "article:tag", do: "" }, // get tags function
-      title: { property: "og:title", do: false },
-      issue: { property: "citation_issue", do: false },
-      journalTitle: { property: "citation_journal_title", do: false },
-      url: { property: "og:url", do: false },
-      volume: { property: "citation_volume", do: false },
+      abstract: { property: ["openGraph", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: false },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      image: { property: ["openGraph", "image"], do: "getUrl" },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      keywords: { property: ["openGraph", "tag"], do: false },
+      title: { property: ["openGraph", "title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
     },
   },
   kantian_review: {
@@ -105,19 +114,21 @@ module.exports.config = {
     },
 
     metadataConfig: {
-      abstract: { property: "citation_abstract", do: "stripMarkUp" }, // func
-      author: { property: "citation_author", do: false },
-      date: { property: "citation_online_date", do: toIso },
-      doi: { property: "citation_doi", do: false },
-      institution: { property: "citation_author_institution", do: false },
-      firstpage: { property: "citation_firstpage", do: false },
-      lastpage: { property: "citation_lastpage", do: false },
-      keywords: { property: "citation_keywords", do: "splitAndCapFirstLetter" }, //func
-      title: { property: "citation_title", do: false },
-      issue: { property: "citation_issue", do: false },
-      journalTitle: { property: "citation_journal_title", do: false },
-      url: { property: "og:url", do: false },
-      volume: { property: "citation_volume", do: false },
+      abstract: { property: ["highwirePress", "abstract"], do: "stripMU" },
+      author: { property: ["highwirePress", "author"], do: false },
+      date: { property: ["highwirePress", "online_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      keywords: {
+        property: ["highwirePress", "keywords"],
+        do: "splitIntoArray",
+      },
+      title: { property: ["highwirePress", "title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
     },
   },
   european_journal_of_philosophy: {
@@ -441,83 +452,32 @@ const request = require("request");
 const go = async (input) => {
   var options = {
     url:
-      "https://academic.oup.com/bjps/article-abstract/71/1/33/4683640?redirectedFrom=fulltext",
+      "https://www.cambridge.org/core/journals/kantian-review/article/which-emotions-should-kantians-cultivate-and-which-ones-should-they-discipline/1963B906AE2A3B777245DDDA78CE80B6",
     jar: request.jar(), // Cookie jar
     headers: {
-      "User-Agent": "webscraper",
+      // "User-Agent": "webscraper",
     },
   };
 
   scrape(options).then((metadata, error) => {
-    const abstract =
-      metadata[input.metadataConfig.abstract.property[0]][
-        input.metadataConfig.abstract.property[1]
-      ];
-    const author =
-      metadata[input.metadataConfig.author.property[0]][
-        input.metadataConfig.author.property[1]
-      ];
-    const date =
-      metadata[input.metadataConfig.date.property[0]][
-        input.metadataConfig.date.property[1]
-      ];
-    const doi =
-      metadata[input.metadataConfig.doi.property[0]][
-        input.metadataConfig.doi.property[1]
-      ];
-    const firstpage =
-      metadata[input.metadataConfig.firstpage.property[0]][
-        input.metadataConfig.firstpage.property[1]
-      ];
-    const institution =
-      metadata[input.metadataConfig.institution.property[0]][
-        input.metadataConfig.institution.property[1]
-      ];
-    const issue =
-      metadata[input.metadataConfig.issue.property[0]][
-        input.metadataConfig.issue.property[1]
-      ];
-    const journalTitle =
-      metadata[input.metadataConfig.journalTitle.property[0]][
-        input.metadataConfig.journalTitle.property[1]
-      ];
-    const lastpage =
-      metadata[input.metadataConfig.lastpage.property[0]][
-        input.metadataConfig.lastpage.property[1]
-      ];
-    const title =
-      metadata[input.metadataConfig.title.property[0]][
-        input.metadataConfig.title.property[1]
-      ];
-    const url =
-      metadata[input.metadataConfig.url.property[0]][
-        input.metadataConfig.url.property[1]
-      ];
-    const volume =
-      metadata[input.metadataConfig.volume.property[0]][
-        input.metadataConfig.volume.property[1]
-      ];
-
-    const metadataObject = {
-      abstract,
-      author,
-      date,
-      doi,
-      firstpage,
-      institution,
-      issue,
-      journalTitle,
-      lastpage,
-      title,
-      url,
-      volume,
-    };
-
-    console.log(metadataObject);
+    const metadataKeys = Object.keys(input.metadataConfig);
+    const metadataObj = {};
+    metadataKeys.forEach((key) => {
+      metadataObj[key] =
+        metadata[input.metadataConfig[key].property[0]][
+          input.metadataConfig[key].property[1]
+        ];
+    });
+    console.log(metadataObj);
+    // console.log(metadata);
 
     if (error) {
       console.log(error);
     }
   });
 };
-go(this.config.british_journal_for_the_philosophy_of_science);
+go(this.config.kantian_review);
+// const t = Object.keys(
+//   this.config.british_journal_for_the_history_of_philosophy.metadataConfig
+// );
+// console.log(t);
