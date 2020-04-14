@@ -1,10 +1,15 @@
 const { getMetadata, metadataRuleSets } = require("page-metadata-parser");
 const domino = require("domino");
 const axios = require("axios").default;
+const metaget = require("metaget");
 
 // RSS
 let Parser = require("rss-parser");
-let parser = new Parser();
+let parser = new Parser({
+  headers: {
+    Accept: "application/xml, application/rss+xml, text/xml",
+  },
+});
 
 // Metadata Parser
 
@@ -59,21 +64,51 @@ const setRuleToMetadata = async (config, doc, url, color) => {
 const getRss = async (config) => {
   const url = config.url;
   const filterForKantArticles = config.filter;
-  const { items } = await parser.parseURL(url);
+  try {
+    const { items } = await parser.parseURL(url);
+    const feedWithoutExtraneousMaterials = filterOutFrontMatter(items);
+    const filteredFeed = filterForKantArticles
+      ? filterForKant(feedWithoutExtraneousMaterials)
+      : feedWithoutExtraneousMaterials;
+    // const creator = filteredFeed.map((item) => item.creator.replace(/\n/g, ""));
+    // console.log(filteredFeed);
+    const data = [];
+    filteredFeed.forEach(async (item) => {
+      const metadata = {};
+      const metaresponse = await metaget.fetch(item.link);
+      console.log(metaresponse);
+      metadata.journalTitle = config.name;
 
-  const feedWithoutExtraneousMaterials = filterOutFrontMatter(items);
-  const filteredFeed = filterForKantArticles
-    ? filterForKant(feedWithoutExtraneousMaterials)
-    : feedWithoutExtraneousMaterials;
-  const rssUrls = filteredFeed.map((item) => item.link);
-  const uniqueUrls = [...new Set(rssUrls)];
-  const moddedUrls = uniqueUrls.map((url) => url.replace(/\?af=R/, ""));
-  return moddedUrls;
+      metadata.author = config.rssConfig.author.do
+        ? config.rssConfig.author.do(item[config.rssConfig.author.property])
+        : item[config.rssConfig.author.property];
+
+      metadata.date = config.rssConfig.date.do
+        ? config.rssConfig.date.do(item[config.rssConfig.date.property])
+        : item[config.rssConfig.date.property];
+
+      metadata.title = config.rssConfig.title.do
+        ? config.rssConfig.title.do(item[config.rssConfig.title.property])
+        : item[config.rssConfig.title.property];
+
+      metadata.url = config.rssConfig.url.do
+        ? config.rssConfig.url.do(item[config.rssConfig.url.property])
+        : config.rssConfig.url.property;
+
+      data.push(metadata);
+    });
+    console.log(data);
+  } catch (e) {
+    console.log(e);
+  }
 };
 
-const scrapePages = async (rssURL, config) => {
+const scrapePages = async (rss, config) => {
+  const rssUrls = rss.map((item) => item.link);
+  const uniqueUrls = [...new Set(rssUrls)];
+  const moddedUrls = uniqueUrls.map((url) => url.replace(/\?af=R/, ""));
   try {
-    const promises = rssURL.map(async (url) => {
+    const promises = moddedUrls.map(async (url) => {
       const { data } = await axios.get(url);
       const doc = domino.createWindow(data).document;
       const metadata = await setRuleToMetadata(
@@ -121,9 +156,37 @@ const stripMarkUp = (input) => {
   return input.replace(/<.+?>/g, "").replace(/Abstract/, "");
 };
 
+const removeNewLines = (input) => {
+  return input.replace(/\n/g, "");
+};
+
+const removeParams = (url) => {
+  return url.replace(/\?.+/g, "");
+};
+
+const lastFirst = (name) => {
+  if (!/,/.test(name)) {
+    return null;
+  }
+  const splitAtComma = name.split(",");
+  const first = splitAtComma[1].trim();
+  const last = splitAtComma[0].trim();
+  const fullName = `${first} ${last}`;
+  return fullName;
+};
+
+const toIso = (date) => {
+  const isoDate = new Date(date.replace("-", "/")).toISOString();
+  return isoDate;
+};
+
 exports.scrapePages = scrapePages;
 exports.getArticleTags = getArticleTags;
 exports.getGenerativeImg = getGenerativeImg;
 exports.addCustomRule = addCustomRule;
 exports.getRss = getRss;
 exports.stripMarkUp = stripMarkUp;
+exports.removeNewLines = removeNewLines;
+exports.removeParams = removeParams;
+exports.lastFirst = lastFirst;
+exports.toIso = toIso;

@@ -1,117 +1,60 @@
-const { getArticleTags, getGenerativeImg } = require("./parser");
+const {
+  getArticleTags,
+  getGenerativeImg,
+  getRss,
+  removeNewLines,
+  removeParams,
+  lastFirst,
+  toIso,
+} = require("./parser");
 
 module.exports.config = {
   kant_studien: {
+    name: "Kant Studien",
     url:
       "https://www.degruyter.com/journalissuetocrss/journals/kant/kant-overview.xml",
     color: "15",
     rss: "custom",
+    rssOnly: false,
 
-    metadataConfig: {
-      abstract: {
-        customRule: "custom",
-        value: ["property", "og:description", "content", "abstract"],
-      },
-      author: {
-        customRule: "custom",
-        value: ["name", "citation_author", "content", "author"],
-      },
-      date: {
-        customRule: "custom",
-        value: ["name", "citation_publication_date", "content", "date"],
-      },
-      doi: {
-        customRule: "custom",
-        value: ["name", "citation_doi", "content", "doi"],
-      },
-      firstpage: {
-        customRule: "custom",
-        value: ["name", "citation_firstpage", "content", "firstpage"],
-      },
-      image: { customRule: "default", value: "image" },
-      issue: {
-        customRule: "custom",
-        value: ["name", "citation_issue", "content", "issue"],
-      },
-      journalTitle: {
-        customRule: "custom",
-        value: ["name", "citation_journal_title", "content", "journalTitle"],
-      },
-      keywords: { customRule: "tags", value: getArticleTags },
-      lastpage: {
-        customRule: "custom",
-        value: ["name", "citation_lastpage", "content", "lastpage"],
-      },
-      title: {
-        customRule: "custom",
-        value: ["name", "citation_title", "content", "title"],
-      },
-      url: { customRule: "default", value: "url" },
-      volume: {
-        customRule: "custom",
-        value: ["name", "citation_volume", "content", "volume"],
-      },
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: false },
+      date: { property: "isoDate", do: false },
+      title: { property: "title", do: false },
+      url: { property: "link", do: false },
     },
   },
   kantian_review: {
+    name: "Kantian Review",
     url:
       "https://www.cambridge.org/core/rss/product/id/D3E55E88C6269FFD657D4E68B193ADAB",
     color: "16",
     filter: false,
-    bookReviewSplit: [",", ","],
-    metadataConfig: {
-      abstract: {
-        customRule: "custom",
-        value: ["name", "description", "content", "abstract"],
-      },
-      author: {
-        customRule: "custom",
-        value: ["name", "citation_author", "content", "author"],
-      },
-      date: {
-        customRule: "custom",
-        value: ["name", "citation_publication_date", "content", "date"],
-      },
-      doi: {
-        customRule: "custom",
-        value: ["name", "citation_doi", "content", "doi"],
-      },
-      firstpage: {
-        customRule: "custom",
-        value: ["name", "citation_firstpage", "content", "firstpage"],
-      },
-      image: { customRule: "image", value: getGenerativeImg },
-      issue: {
-        customRule: "custom",
-        value: ["name", "citation_issue", "content", "issue"],
-      },
-      journalTitle: {
-        customRule: "custom",
-        value: ["name", "citation_journal_title", "content", "journalTitle"],
-      },
-      keywords: {
-        customRule: "custom",
-        value: ["name", "citation_keywords", "content", "keywords"],
-      },
-      lastpage: {
-        customRule: "custom",
-        value: ["name", "citation_lastpage", "content", "lastpage"],
-      },
-      title: {
-        customRule: "custom",
-        value: ["name", "citation_title", "content", "title"],
-      },
-      url: { customRule: "default", value: "url" },
-      volume: {
-        customRule: "custom",
-        value: ["name", "citation_volume", "content", "volume"],
-      },
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content", do: false },
+      author: { property: "creator", do: lastFirst },
+      date: { property: "dc:date", do: toIso },
+      title: { property: "title", do: false },
+      url: { property: "link", do: removeParams },
     },
   },
   european_journal_of_philosophy: {
+    name: "European Journal of Philosophy",
     url: "https://onlinelibrary.wiley.com/feed/14680378/most-recent",
     color: "14",
     filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "date", do: false },
+      title: { property: "title", do: false },
+      url: { property: "link", do: removeParams },
+    },
 
     metadataConfig: {
       abstract: {
@@ -172,129 +115,308 @@ module.exports.config = {
     },
   },
   canadian_journal_of_philosophy: {
+    name: "Canadian Journal of Philosophy",
     url: "https://www.tandfonline.com/feed/rss/rcjp20",
     color: "13",
     filter: true,
+    rssOnly: true,
 
-    metadataConfig: {
-      abstract: {
-        customRule: "custom",
-        value: ["property", "og:description", "content", "abstract"],
-      },
-      author: {
-        customRule: "custom",
-        value: ["name", "citation_author", "content", "author"],
-      },
-      authorInstitution: {
-        customRule: "custom",
-        value: [
-          "name",
-          "citation_author_institution",
-          "content",
-          "institution",
-        ],
-      },
-      date: {
-        customRule: "custom",
-        value: ["name", "citation_online_date", "content", "date"],
-      },
-      doi: {
-        customRule: "custom",
-        value: ["name", "citation_doi", "content", "doi"],
-      },
-      firstpage: {
-        customRule: "custom",
-        value: ["name", "citation_firstpage", "content", "firstpage"],
-      },
-      image: { customRule: "default", value: "image" },
-      issue: {
-        customRule: "custom",
-        value: ["name", "citation_issue", "content", "issue"],
-      },
-      journalTitle: {
-        customRule: "custom",
-        value: ["name", "citation_journal_title", "content", "journalTitle"],
-      },
-      keywords: {
-        customRule: "custom",
-        value: ["name", "citation_keywords", "content", "keywords"],
-      },
-      lastpage: {
-        customRule: "custom",
-        value: ["name", "citation_lastpage", "content", "lastpage"],
-      },
-      title: {
-        customRule: "custom",
-        value: ["name", "citation_title", "content", "title"],
-      },
-      url: { customRule: "default", value: "url" },
-      volume: {
-        customRule: "custom",
-        value: ["name", "citation_volume", "content", "volume"],
-      },
+    rssConfig: {
+      abstract: { property: "description", do: false },
+      author: { property: "dc:creator", do: false },
+      date: { property: "prism:coverDate", do: false },
+      doi: { property: "dc:identifier", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
     },
   },
   british_journal_for_the_history_of_philosophy: {
+    name: "British Journal for the History of Philosophy",
     url: "https://www.tandfonline.com/feed/rss/rbjh20",
     color: "12",
     filter: true,
+    rssOnly: true,
 
-    metadataConfig: {
-      abstract: {
-        customRule: "custom",
-        value: ["property", "og:description", "content", "abstract"],
-      },
-      author: {
-        customRule: "custom",
-        value: ["name", "citation_author", "content", "author"],
-      },
-      authorInstitution: {
-        customRule: "custom",
-        value: [
-          "name",
-          "citation_author_institution",
-          "content",
-          "institution",
-        ],
-      },
-      date: {
-        customRule: "custom",
-        value: ["name", "citation_online_date", "content", "date"],
-      },
-      doi: {
-        customRule: "custom",
-        value: ["name", "citation_doi", "content", "doi"],
-      },
-      firstpage: {
-        customRule: "custom",
-        value: ["name", "citation_firstpage", "content", "firstpage"],
-      },
-      image: { customRule: "default", value: "image" },
-      issue: {
-        customRule: "custom",
-        value: ["name", "citation_issue", "content", "issue"],
-      },
-      journalTitle: {
-        customRule: "custom",
-        value: ["name", "citation_journal_title", "content", "journalTitle"],
-      },
-      keywords: {
-        customRule: "custom",
-        value: ["name", "citation_keywords", "content", "keywords"],
-      },
-      lastpage: {
-        customRule: "custom",
-        value: ["name", "citation_lastpage", "content", "lastpage"],
-      },
-      title: {
-        customRule: "custom",
-        value: ["name", "citation_title", "content", "title"],
-      },
-      url: { customRule: "default", value: "url" },
-      volume: {
-        customRule: "custom",
-        value: ["name", "citation_volume", "content", "volume"],
-      },
+    rssConfig: {
+      abstract: { property: "contentSnippet", do: false },
+      author: { property: "dc:creator", do: false },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  graduate_faculty_philosophy_journal: {
+    name: "Graduate Faculty Philosophy Journal",
+    url: "https://www.pdcnet.org/pdc/bvdb.nsf/getrssxml?openagent&synonym=gfpj",
+    color: "11",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "contentSnippet", do: false },
+      author: { property: "creator", do: false },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: null },
+    },
+  },
+  nous: {
+    name: "Noûs",
+    url: "https://onlinelibrary.wiley.com/feed/14680068/most-recent",
+    color: "10",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  ethics: {
+    name: "Ethics",
+    url:
+      "https://www.journals.uchicago.edu/action/showFeed?type=etoc&feed=rss&jc=et",
+    color: "9",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  british_journal_for_the_philosophy_of_science: {
+    name: "British Journal for the Philosophy of Science",
+    url: "https://academic.oup.com/rss/site_5434/3295.xml", //url not working
+    color: "8",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  idealistic_studies: {
+    name: "Idealistic Studies",
+    url:
+      "https://www.pdcnet.org/pdc/bvdb.nsf/getrssxml?openagent&synonym=idstudies",
+    color: "7",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  inquiry: {
+    name: "Inquiry",
+    url: "https://www.tandfonline.com/feed/rss/sinq20",
+    color: "6",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  the_philosophical_inquiry: {
+    name: "The Philosophical Inquiry",
+    url: "https://academic.oup.com/rss/site_5498/3359.xml",
+    color: "5",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  philosophy_and_phenomenological_research: {
+    name: "Philosophy and Phenomenological Research",
+    url: "https://onlinelibrary.wiley.com/feed/19331592/most-recent",
+    color: "4",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  the_monist: {
+    name: "The Monist",
+    url: "http://academic.oup.com/rss/site_5491/3352.xml",
+    color: "3",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  philosophical_topics: {
+    name: "Philosophical Topics",
+    url:
+      "https://www.pdcnet.org/pdc/bvdb.nsf/getrssxml?openagent&synonym=philtopics",
+    color: "2",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  ergo: {
+    name: "Ergo",
+    url: "https://www.ergophiljournal.org/e/ergo/longfeed.xml",
+    color: "1",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "content:encoded", do: false },
+      author: { property: "creator", do: removeNewLines },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  studies_in_history_and_philosophy_of_science_part_a: {
+    name: "Studies in History and Philosophy of Science Part A",
+    url: "http://rss.sciencedirect.com/publication/science/00393681",
+    color: "16",
+    filter: true,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "description", do: false },
+      author: { property: "creator", do: false },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
+    },
+  },
+  kant_yearbook: {
+    name: "Kant Yearbook",
+    url:
+      "https://www.degruyter.com/journalissuetocrss/journals/kantyb/kantyb-overview.xml",
+    color: "17",
+    filter: false,
+    rssOnly: true,
+
+    rssConfig: {
+      abstract: { property: "description", do: false },
+      author: { property: "creator", do: false },
+      date: { property: "isoDate", do: false },
+      doi: { property: "prism:doi", do: false },
+      endingpage: { property: "prism:endingPage", do: false },
+      startingpage: { property: "prism:startingPage", do: false },
+      title: { property: "title", do: false },
+      volume: { property: "prism:volume", do: false },
+      issue: { property: "prism:number", do: false },
+      url: { property: "link", do: removeParams },
     },
   },
 };
+getRss(this.config.kant_yearbook);
