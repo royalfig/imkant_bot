@@ -1,77 +1,46 @@
-const { getMetadata, metadataRuleSets } = require("page-metadata-parser");
-const domino = require("domino");
-const axios = require("axios").default;
-const metaget = require("metaget");
-
-// RSS
+/*
+/ Libs
+/ Parser & parser gets and parses RSS feed
+/ Scrape/request for getting metatags
+*/
 let Parser = require("rss-parser");
 let parser = new Parser({
   headers: {
     Accept: "application/xml, application/rss+xml, text/xml",
   },
 });
+const scrape = require("html-metadata");
+const request = require("request");
 
-// Metadata Parser
-
-/* Default metadata 
-__Field	Description__
-description:	A user displayable description for the page.
-icon:	A URL which contains an icon for the page.
-image:	A URL which contains a preview image for the page.
-keywords:	The meta keywords for the page.
-provider:	A string representation of the sub and primary domains.
-title:	A user displayable title for the page.
-type:	The type of content as defined by opengraph.
-url:	A canonical URL for the page.
-*/
-
-// Add a custom rule
-const addCustomRule = (key, keyContent, property, name) => {
-  const meta = "meta[" + key + "=" + '"' + keyContent + '"]';
-  const rule = {
-    rules: [[meta, (element) => element.getAttribute(property)]],
-  };
-  metadataRuleSets[name] = rule;
+// Filters for limiting data to relevant content
+const filterForKant = (postArray) => {
+  const regex = RegExp(/Kant/i);
+  const results = postArray.filter((post) => regex.test(post.title));
+  return results;
 };
 
-const setRuleToMetadata = async (config, doc, url, color) => {
-  const entries = Object.getOwnPropertyNames(config);
-
-  entries.forEach((entry) => {
-    if (config[entry].customRule === "custom") {
-      const dataArr = config[entry].value;
-      addCustomRule(dataArr[0], dataArr[1], dataArr[2], dataArr[3]);
-    }
-  });
-
-  const metadata = getMetadata(doc, url);
-
-  entries.forEach((entry) => {
-    if (config[entry].customRule === "tags") {
-      const result = config[entry].value(doc);
-      metadata.keywords = result;
-    }
-
-    if (config[entry].customRule === "image") {
-      const result = config[entry].value(color);
-      metadata.image = result;
-    }
-  });
-
-  return metadata;
+const filterOutFrontMatter = (postArray) => {
+  const regex = RegExp(/Titelseiten|Front Matter|Back Matter/i);
+  const results = postArray.filter((post) => !regex.test(post.title));
+  return results;
 };
 
-const getRss = async (config) => {
+// Get RSS feed and parse
+exports.getRss = async (config) => {
   const url = config.url;
+
+  // For general sources, limit results to subject
   const filterForKantArticles = config.filter;
+  const rssOnly = config.rssOnly;
+  if (rssOnly) {
+    console.log("RSS Only. Nothing to do right now!");
+  }
   try {
     const { items } = await parser.parseURL(url);
     const feedWithoutExtraneousMaterials = filterOutFrontMatter(items);
     const filteredFeed = filterForKantArticles
       ? filterForKant(feedWithoutExtraneousMaterials)
       : feedWithoutExtraneousMaterials;
-    // const creator = filteredFeed.map((item) => item.creator.replace(/\n/g, ""));
-    // console.log(filteredFeed);
     const data = [];
     filteredFeed.forEach(async (item) => {
       const metadata = {};
@@ -95,100 +64,48 @@ const getRss = async (config) => {
 
       data.push(metadata);
     });
-    console.log(data);
+    const onlyUrls = filteredFeed.map((item) => item.link);
+    const onlyUniqueUrls = [...new Set(onlyUrls)];
+    return onlyUniqueUrls;
   } catch (e) {
     console.log(e);
   }
 };
 
-const scrapePages = async (rss, config) => {
-  const rssUrls = rss.map((item) => item.link);
-  const uniqueUrls = [...new Set(rssUrls)];
-  const moddedUrls = uniqueUrls.map((url) => url.replace(/\?af=R/, ""));
+exports.getAndParseMetaTags = async (url, input) => {
+  const options = {
+    url: url,
+    jar: request.jar(), // Cookie jar
+  };
   try {
-    const promises = moddedUrls.map(async (url) => {
-      const { data } = await axios.get(url);
-      const doc = domino.createWindow(data).document;
-      const metadata = await setRuleToMetadata(
-        config.metadataConfig,
-        doc,
-        url,
-        config.color
-      );
-      return metadata;
+    const metadata = await scrape(options);
+
+    const metadataKeys = Object.keys(input.metadataConfig);
+    const metadataObj = {};
+
+    // If the key has an associated function (do: ), run it on the metadata
+    metadataKeys.forEach((key) => {
+      if (input.metadataConfig[key].do) {
+        metadataObj[key] = input.metadataConfig[key].do(
+          metadata[input.metadataConfig[key].property[0]][
+            input.metadataConfig[key].property[1]
+          ]
+        );
+      } else {
+        metadataObj[key] =
+          metadata[input.metadataConfig[key].property[0]][
+            input.metadataConfig[key].property[1]
+          ];
+      }
     });
-    const dataArray = await Promise.all(promises);
-    console.log(dataArray);
-    return dataArray;
-  } catch (err) {
-    console.log(err, err.context);
+
+    console.log(metadataObj);
+    return metadataObj;
+  } catch (e) {
+    console.log(e);
   }
-};
-
-const getArticleTags = (doc) => {
-  const tags = doc.querySelectorAll('meta[property="article:tag"]');
-  const arr = tags.map((tag) => tag.getAttribute("content"));
-  if (arr.length) {
-    return arr;
-  }
-  return null;
-};
-
-const getGenerativeImg = (color) => {
-  return `https://generative-placeholders.glitch.me/image?width=1200&height=600&colors=${color}`;
-};
-
-const filterForKant = (postArray) => {
-  const regex = RegExp(/Kant/i);
-  const results = postArray.filter((post) => regex.test(post.title));
-  return results;
-};
-
-const filterOutFrontMatter = (postArray) => {
-  const regex = RegExp(/Titelseiten|Front Matter|Back Matter/i);
-  const results = postArray.filter((post) => !regex.test(post.title));
-  return results;
-};
-
-const stripMarkUp = (input) => {
-  return input.replace(/<.+?>/g, "").replace(/Abstract/, "");
-};
-
-const removeNewLines = (input) => {
-  return input.replace(/\n/g, "");
-};
-
-const removeParams = (url) => {
-  return url.replace(/\?.+/g, "");
-};
-
-const lastFirst = (name) => {
-  if (!/,/.test(name)) {
-    return null;
-  }
-  const splitAtComma = name.split(",");
-  const first = splitAtComma[1].trim();
-  const last = splitAtComma[0].trim();
-  const fullName = `${first} ${last}`;
-  return fullName;
-};
-
-const toIso = (date) => {
-  const isoDate = new Date(date.replace("-", "/")).toISOString();
-  return isoDate;
 };
 
 const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
-
-exports.scrapePages = scrapePages;
-exports.getArticleTags = getArticleTags;
-exports.getGenerativeImg = getGenerativeImg;
-exports.addCustomRule = addCustomRule;
-exports.getRss = getRss;
-exports.stripMarkUp = stripMarkUp;
-exports.removeNewLines = removeNewLines;
-exports.removeParams = removeParams;
-exports.lastFirst = lastFirst;
-exports.toIso = toIso;

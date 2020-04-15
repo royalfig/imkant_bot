@@ -1,12 +1,17 @@
 const {
-  getArticleTags,
-  getGenerativeImg,
-  getRss,
+  removeDoubleSpace,
   removeNewLines,
   removeParams,
-  lastFirst,
+  reverseNameOrder,
   toIso,
-} = require("./parser");
+  getFirstItemInArray,
+  dateConversion,
+  splitBySemiColon,
+  getImgUrl,
+  getSecondItemInArray,
+  stripMarkUp,
+  splitByComma,
+} = require("./util");
 
 module.exports.config = {
   british_journal_for_the_history_of_philosophy: {
@@ -18,12 +23,12 @@ module.exports.config = {
 
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["dublinCore", "creator"], do: "removeDoubleSpace" },
-      date: { property: ["dublinCore", "date"], do: "convert 9 Jul 2019" },
-      doi: { property: ["dublinCore", "identifier"], do: "firstItemInArr" },
+      author: { property: ["dublinCore", "creator"], do: removeDoubleSpace },
+      date: { property: ["dublinCore", "date"], do: dateConversion },
+      doi: { property: ["dublinCore", "identifier"], do: getFirstItemInArray },
       title: { property: ["dublinCore", "title"], do: false },
       image: { property: ["openGraph", "image"], do: false },
-      keywords: { property: ["dublinCore", "subject"], do: "arraySplitter" },
+      keywords: { property: ["dublinCore", "subject"], do: splitBySemiColon },
       url: { property: ["openGraph", "url"], do: false },
     },
   },
@@ -49,7 +54,7 @@ module.exports.config = {
 
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
@@ -88,7 +93,7 @@ module.exports.config = {
       doi: { property: ["highwirePress", "doi"], do: false },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
       lastpage: { property: ["highwirePress", "lastpage"], do: false },
-      image: { property: ["openGraph", "image"], do: "getUrl" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
       issue: { property: ["highwirePress", "issue"], do: false },
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       keywords: { property: ["openGraph", "tag"], do: false },
@@ -107,14 +112,14 @@ module.exports.config = {
 
     rssConfig: {
       abstract: { property: "content", do: false },
-      author: { property: "creator", do: lastFirst },
+      author: { property: "creator", do: reverseNameOrder },
       date: { property: "dc:date", do: toIso },
       title: { property: "title", do: false },
       url: { property: "link", do: removeParams },
     },
 
     metadataConfig: {
-      abstract: { property: ["highwirePress", "abstract"], do: "stripMU" },
+      abstract: { property: ["highwirePress", "abstract"], do: stripMarkUp },
       author: { property: ["highwirePress", "author"], do: false },
       date: { property: ["highwirePress", "online_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
@@ -124,7 +129,7 @@ module.exports.config = {
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       keywords: {
         property: ["highwirePress", "keywords"],
-        do: "splitIntoArray",
+        do: splitBySemiColon,
       },
       title: { property: ["highwirePress", "title"], do: false },
       url: { property: ["general", "canonical"], do: false },
@@ -151,7 +156,7 @@ module.exports.config = {
       author: { property: ["highwirePress", "author"], do: false },
       date: { property: ["highwirePress", "online_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
-      image: { property: ["openGraph", "image"], do: "getUrl" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
       issue: { property: ["highwirePress", "issue"], do: false },
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       title: { property: ["openGraph", "title"], do: false },
@@ -181,9 +186,9 @@ module.exports.config = {
     metadataConfig: {
       abstract: { property: ["dublinCore", "description"], do: false },
       author: { property: ["dublinCore", "creator"], do: false },
-      date: { property: ["dublinCore", "date"], do: "split 27 feb 2020" },
+      date: { property: ["dublinCore", "date"], do: dateConversion },
       doi: { property: ["dublinCore", "source"], do: false },
-      image: { property: ["openGraph", "image"], do: "getUrl" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       title: { property: ["openGraph", "title"], do: false },
       url: { property: ["openGraph", "url"], do: false },
@@ -233,7 +238,7 @@ module.exports.config = {
       author: { property: ["highwirePress", "author"], do: false },
       date: { property: ["highwirePress", "online_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
-      image: { property: ["openGraph", "image"], do: "getUrl" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
       institution: {
         property: ["highwirePress", "author_institution"],
         do: false,
@@ -271,9 +276,9 @@ module.exports.config = {
 
     metadataConfig: {
       abstract: { property: ["dublinCore", "description"], do: false },
-      author: { property: ["dublinCore", "creator"], do: "stripDoubleSpace" },
+      author: { property: ["dublinCore", "creator"], do: removeDoubleSpace },
       date: { property: ["dublinCore", "date"], do: toIso },
-      doi: { property: ["dublinCore", "identifier"], do: "firstInArray" },
+      doi: { property: ["dublinCore", "identifier"], do: getFirstItemInArray },
 
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       title: { property: ["dublinCore", "title"], do: false },
@@ -303,12 +308,12 @@ module.exports.config = {
 
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
         property: ["highwirePress", "author_institution"],
-        do: "arr?",
+        do: false,
       },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
       lastpage: { property: ["highwirePress", "lastpage"], do: false },
@@ -345,10 +350,10 @@ module.exports.config = {
         property: ["dublinCore", "creator"],
         do: "arr? remove dbl space",
       },
-      date: { property: ["dublinCore", "date"], do: "split and form date" },
-      doi: { property: ["dublinCore", "identifier"], do: "array2" },
-      image: { property: ["openGraph", "image"], do: "get url from object" },
-      keywords: { property: ["dublinCore", "subject"], do: "split -> ;" },
+      date: { property: ["dublinCore", "date"], do: dateConversion },
+      doi: { property: ["dublinCore", "identifier"], do: getSecondItemInArray },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
+      keywords: { property: ["dublinCore", "subject"], do: splitBySemiColon },
       title: { property: ["openGraph", "title"], do: false },
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       url: { property: ["openGraph", "url"], do: false },
@@ -375,12 +380,12 @@ module.exports.config = {
     },
     metadataConfig: {
       abstract: { property: ["openGraph", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
         property: ["highwirePress", "author_institution"],
-        do: "arr?",
+        do: false,
       },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
       lastpage: { property: ["highwirePress", "lastpage"], do: false },
@@ -414,7 +419,7 @@ module.exports.config = {
     },
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "online_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
@@ -425,7 +430,7 @@ module.exports.config = {
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       url: { property: ["openGraph", "url"], do: false },
       keywords: { property: ["highwirePress", "keywords"], do: false },
-      image: { property: ["openGraph", "image"], do: "get url" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
     },
   },
   the_monist: {
@@ -449,7 +454,7 @@ module.exports.config = {
     },
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
@@ -463,7 +468,7 @@ module.exports.config = {
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       url: { property: ["general", "canonical"], do: false },
       volume: { property: ["highwirePress", "volume"], do: false },
-      image: { property: ["openGraph", "image"], do: "get url" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
     },
   },
   philosophical_topics: {
@@ -488,12 +493,12 @@ module.exports.config = {
     },
     metadataConfig: {
       abstract: { property: ["general", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       institution: {
         property: ["highwirePress", "author_institution"],
-        do: "arr?",
+        do: false,
       },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
       lastpage: { property: ["highwirePress", "lastpage"], do: false },
@@ -502,7 +507,7 @@ module.exports.config = {
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       url: { property: ["general", "canonical"], do: false },
       volume: { property: ["highwirePress", "volume"], do: false },
-      image: { property: ["openGraph", "image"], do: "get url" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
     },
   },
   ergo: {
@@ -525,7 +530,7 @@ module.exports.config = {
       url: { property: "link", do: removeParams },
     },
     metadataConfig: {
-      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      author: { property: ["highwirePress", "author"], do: reverseNameOrder },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       title: { property: ["highwirePress", "title"], do: false },
@@ -583,11 +588,11 @@ module.exports.config = {
       url: { property: "link", do: removeParams },
     },
     metadataConfig: {
-      abstract: { property: ["openGraph", "description"], do: "strip" },
-      author: { property: ["highwirePress", "author"], do: "arr" },
+      abstract: { property: ["openGraph", "description"], do: stripMarkUp },
+      author: { property: ["highwirePress", "author"], do: false },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
-      image: { property: ["openGraph", "image"], do: "geturl" },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
       lastpage: { property: ["highwirePress", "lastpage"], do: false },
       title: { property: ["highwirePress", "title"], do: false },
@@ -599,37 +604,13 @@ module.exports.config = {
   },
 };
 
-const scrape = require("html-metadata");
-const request = require("request");
+const { getRss, getAndParseMetaTags } = require("./parser");
 
-const go = async (input) => {
-  var options = {
-    url: "https://www.degruyter.com/view/journals/kantyb/11/1/article-p17.xml",
-    jar: request.jar(), // Cookie jar
-    headers: {
-      // "User-Agent": "webscraper",
-    },
-  };
-
-  scrape(options).then((metadata, error) => {
-    console.log(metadata);
-    const metadataKeys = Object.keys(input.metadataConfig);
-    const metadataObj = {};
-    metadataKeys.forEach((key) => {
-      metadataObj[key] =
-        metadata[input.metadataConfig[key].property[0]][
-          input.metadataConfig[key].property[1]
-        ];
-    });
-    console.log(metadataObj);
-
-    if (error) {
-      console.log(error);
-    }
+const go = async (config) => {
+  const urls = await getRss(config);
+  urls.forEach((url) => {
+    getAndParseMetaTags(url, config);
   });
 };
-go(this.config.kant_yearbook);
-// const t = Object.keys(
-//   this.config.british_journal_for_the_history_of_philosophy.metadataConfig
-// );
-// console.log(t);
+
+go(this.config.kantian_review);
