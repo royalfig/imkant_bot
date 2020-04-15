@@ -59,11 +59,29 @@ exports.getGenerativeImg = (color) => {
 exports.getImgUrl = (imgObj) => imgObj.url;
 
 // Name
+exports.nameCheck = (input) => {
+  if (!input) {
+    return "";
+  }
+
+  if (Array.isArray(input)) {
+    return input.join();
+  }
+
+  return input;
+};
+
 exports.removeNewLines = (input) => {
+  if (!this.nameCheck(input)) {
+    return "";
+  }
   return input.replace(/\n/g, "");
 };
 
 exports.reverseNameOrder = (name) => {
+  if (!this.nameCheck(input)) {
+    return "";
+  }
   if (!/,/.test(name)) {
     return name;
   }
@@ -84,7 +102,12 @@ exports.reverseNameOrder = (name) => {
   return fullName;
 };
 
-exports.removeDoubleSpace = (input) => input.replace("  ", " ");
+exports.removeDoubleSpace = (input) => {
+  if (!this.nameCheck(input)) {
+    return "";
+  }
+  return input.replace("  ", " ");
+};
 
 // Url
 exports.removeParams = (url) => {

@@ -1,4 +1,4 @@
-const { stripMarkUp } = require("../utils/parser");
+const { stripMarkUp } = require("../utils/util");
 
 //Local
 const months = [
@@ -29,19 +29,21 @@ class Article {
     this.date = data.date;
     this.firstpage = data.firstpage;
     this.image = data.image;
+    this.institution = data.institution;
     this.issue = data.issue;
     this.journalTitle = data.journalTitle;
     this.lastpage = data.lastpage;
+    this.tags = this.createKeywords(data.keywords);
     this.url = data.url;
     this.volume = data.volume;
 
     // Data modified and other values
     this.bookReview = this.createTitleOptions(data.title).bookReview;
     this.doi = "https://doi.org/" + data.doi;
-    this.keywordArray = this.keywordArrayCreator(data.keywords);
     this.longTitle = this.createTitleOptions(data.title).longTitle;
     this.shortAbstract = this.shortenAbstract(stripMarkUp(this.abstract));
     this.shortTitle = this.createTitleOptions(data.title).shortTitle;
+    this.formattedDate = this.formatDate(this.date);
 
     // Create content and post model
     this.mobiledoc = this.createPostContent();
@@ -63,15 +65,6 @@ class Article {
 
     let shortTitle = longTitle;
 
-    // if (bookReview) {
-    //   const bookReviewArray = longTitle.split(":");
-    //   const bookReviewTitle = bookReviewArray[1];
-    //   const bookReviewAuthor = bookReviewArray[0];
-    //   const createdBookReviewTitle =
-    //     bookReviewTitle + " by " + bookReviewAuthor;
-    //   shortTitle = createdBookReviewTitle;
-    // }
-
     if (longTitle.length > 255) {
       shortTitle = longTitle.substring(0, 255);
     }
@@ -80,57 +73,40 @@ class Article {
     return titleObject;
   }
 
-  createDate(date) {
-    if (!date) {
-      return { formattedDate: null, publishedDate: null };
+  formatDate(isoDate) {
+    if (!isoDate) {
+      return isoDate;
     }
-    const pubDate = new Date(date.replace(/-/g, "/"));
 
-    const formattedDate = `${pubDate.getDate()} ${
-      months[pubDate.getMonth()]
-    } ${pubDate.getFullYear()}`;
+    const jsDate = new Date(isoDate);
+    const dateNum = jsDate.getDate();
+    const month = months[jsDate.getMonth()];
+    const year = jsDate.getFullYear();
 
-    const publishedDate = new Date(date.replace(/-/g, "/")).toISOString();
-
-    return { formattedDate, publishedDate };
+    const formattedDate = `${month} ${dateNum}, ${year}`;
+    return formattedDate;
   }
 
-  keywordArrayCreator(keywords) {
-    if (!keywords) {
-      return [];
+  createKeywords(keywords) {
+    if (this.bookReview && keywords) {
+      keywords.push("Book Review", this.journalTitle);
+      return keywords;
     }
-
-    const keywordFormatter = (arr) => {
-      const capFirstLetter = arr.map((tag) =>
-        tag
-          .toLowerCase()
-          .trim()
-          .replace(/\b(\w)/g, (match) => match.toUpperCase())
-      );
-      if (this.bookReview) {
-        capFirstLetter.push("Book Review", this.journalTitle);
-        return capFirstLetter;
-      }
-      capFirstLetter.push("Article", this.journalTitle);
-      return capFirstLetter;
-    };
-
-    if (Array.isArray(keywords)) {
-      const result = keywordFormatter(keywords);
-      return result;
-    } else {
-      let newArray = keywords.split(";");
-      const formattedArray = keywordFormatter(newArray);
-      return formattedArray;
+    if (!keywords && this.bookReview) {
+      return ["Book Review", this.journalTitle];
     }
+    if (!keywords && !this.bookReview) {
+      return ["Article", this.journalTitle];
+    }
+    keywords.push("Article", this.journalTitle);
+    return keywords;
   }
 
   createPostContent() {
-    //  Move date to constructor
-
-    const formattedDate = this.createDate(this.date).formattedDate;
     const img = this.image || this.featureImage;
-
+    const author = this.author || `${this.journalTitle}`;
+    const institution =
+      this.institution !== undefined ? ` (${this.institution}) ` : "";
     // TODO Add logic to refine html output when elements are missing.
     const citation = `
       <div class="media">
@@ -143,7 +119,7 @@ class Article {
         </div>
         <div class="media__right">
           <div class="media__content">
-            <p>${this.author} published <a href="${this.url}">&ldquo;${this.longTitle}&rdquo;</a> on ${formattedDate} in <em>${this.journalTitle}</em> ${this.volume}.${this.issue}: ${this.firstpage}-${this.lastpage}. <a href="${this.doi}">${this.doi}</a>.</p>
+            <p>${author}${institution} published <a href="${this.url}">&ldquo;${this.longTitle}&rdquo;</a> on ${this.formattedDate} in <em>${this.journalTitle}</em> ${this.volume}.${this.issue}: ${this.firstpage}-${this.lastpage}. <a href="${this.doi}">${this.doi}</a>.</p>
           </div>
         </div>
       </div>`;
@@ -170,9 +146,9 @@ class Article {
   createGhostModel() {
     const objToPost = {
       title: this.shortTitle,
-      published_at: this.createDate(this.date).publishedDate,
+      published_at: this.date,
       mobiledoc: this.mobiledoc,
-      tags: this.keywordArray,
+      tags: this.tags,
       feature_image: this.featureImage,
       authors: ["rfeigenb@nd.edu"],
       custom_excerpt: this.shortAbstract,
@@ -182,4 +158,5 @@ class Article {
     return objToPost;
   }
 }
+
 module.exports = Article;

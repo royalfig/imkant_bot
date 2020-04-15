@@ -1,19 +1,19 @@
 const {
+  dateConversion,
+  getFirstItemInArray,
+  getImgUrl,
+  getSecondItemInArray,
+  nameCheck,
   removeDoubleSpace,
   removeNewLines,
   removeParams,
   reverseNameOrder,
-  toIso,
-  getFirstItemInArray,
-  dateConversion,
   splitBySemiColon,
-  getImgUrl,
-  getSecondItemInArray,
   stripMarkUp,
-  splitByComma,
+  toIso,
 } = require("./util");
 
-module.exports.config = {
+module.exports.source = {
   british_journal_for_the_history_of_philosophy: {
     name: "British Journal for the History of Philosophy",
     color: "12",
@@ -88,7 +88,7 @@ module.exports.config = {
 
     metadataConfig: {
       abstract: { property: ["openGraph", "description"], do: false },
-      author: { property: ["highwirePress", "author"], do: false },
+      author: { property: ["highwirePress", "author"], do: nameCheck },
       date: { property: ["highwirePress", "publication_date"], do: toIso },
       doi: { property: ["highwirePress", "doi"], do: false },
       firstpage: { property: ["highwirePress", "firstpage"], do: false },
@@ -98,7 +98,7 @@ module.exports.config = {
       journalTitle: { property: ["highwirePress", "journal_title"], do: false },
       keywords: { property: ["openGraph", "tag"], do: false },
       title: { property: ["openGraph", "title"], do: false },
-      url: { property: ["general", "canonical"], do: false },
+      url: { property: ["general", "canonical"], do: removeParams },
       volume: { property: ["highwirePress", "volume"], do: false },
     },
   },
@@ -604,13 +604,22 @@ module.exports.config = {
   },
 };
 
-const { getRss, getAndParseMetaTags } = require("./parser");
+// TODO Automate Config
 
-const go = async (config) => {
-  const urls = await getRss(config);
-  urls.forEach((url) => {
-    getAndParseMetaTags(url, config);
-  });
-};
+// const { getRss, getAndParseMetaTags } = require("./parser");
+// const Article = require(".././models/models");
 
-go(this.config.kantian_review);
+// const getDataAndPost = async (config) => {
+//   const urls = await getRss(config);
+//   const promises = urls.map(async (url) => {
+//     const metadataObj = await getAndParseMetaTags(url, config);
+//     return metadataObj;
+//   });
+
+//   const metadataObjArr = await Promise.all(promises);
+//   const ghostPosts = metadataObjArr.map((item) => new Article(item));
+
+//   console.log(ghostPosts);
+// };
+
+// go(this.config.kant_studien);

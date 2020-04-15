@@ -4,15 +4,17 @@ const apiKey = process.env.GHOST;
 const GhostAdminAPI = require("@tryghost/admin-api");
 const api = new GhostAdminAPI({
   url: "https://imkant.com",
-  key: apiKey,
+  key:
+    "5e8a31393d8dcc04f1e1918a:2dbc752fff4a2eb3cea79ee663bd546c015253ada54fa89f5b281d59654e0332",
   version: "v3",
 });
 
 const fs = require("fs");
 const path = require("path");
 
-const { getRss, scrapePages } = require("../utils/parser");
+const { getRss, getAndParseMetaTags } = require("../utils/parser");
 const Article = require("../models/models");
+const config = require("../utils/configs");
 
 const getPostsFromGhost = async () =>
   await api.posts.browse({ limit: "all" }).catch((err) => console.log(err));
@@ -52,21 +54,32 @@ const deletePosts = async (input) => {
   }
 };
 
-const postToGhost = async (source) => {
-  const existingPostTitles = await getPostTitles();
-  const rss = await getRss(source);
-  const result = await scrapePages(rss, source);
-  const arts = result.map((item) => new Article(item, source.color));
+const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
+const postToGhost = async (config) => {
+  const existingPostTitles = await getPostTitles();
+  const urls = await getRss(config);
+  const promises = urls.map(async (url) => {
+    const metadataObj = await getAndParseMetaTags(url, config);
+    return metadataObj;
+  });
+  const metadataObjArr = await Promise.all(promises);
+  const ghostPosts = metadataObjArr.map(
+    (item) => new Article(item, config.color)
+  );
   // Log fetched models
   const date = `${
     new Date().getMonth() + 1
   }-${new Date().getDate()}-${new Date().getFullYear()}`;
+
   const filename = `log-${date}.txt`;
-  arts.forEach((item, idx) => {
+
+  ghostPosts.forEach((item, idx) => {
     fs.appendFileSync(
       path.join(process.cwd(), "logs", filename),
-      "\n" + idx + ". " + item.ghostModel.title + "\n",
+      "\n" + idx + ". " + item.ghostModel + "\n",
       (err) => {
         console.log(err);
       }
@@ -74,18 +87,20 @@ const postToGhost = async (source) => {
   });
 
   // Post to ghost db
-  const dedupedArr = arts.filter(
+  const dedupedArr = ghostPosts.filter(
     (item) => !existingPostTitles.includes(item.title)
   );
-  dedupedArr.map((item) => {
-    api.posts
-      .add(item.ghostModel)
-      .then((res) => res.title)
-      .catch((e) => console.log(e));
-  });
+  // console.log(dedupedArr);
+  // dedupedArr.map((item) => {
+  //   api.posts
+  //     .add(item.ghostModel)
+  //     .then((res) => res.title)
+  //     .then(() => sleep(500))
+  //     .catch((e) => console.log(e));
+  // });
   return dedupedArr;
 };
-
+postToGhost(config.source.kant_studien);
 exports.getPostsFromGhost = getPostsFromGhost;
 exports.getPostTitles = getPostTitles;
 exports.deletePosts = deletePosts;

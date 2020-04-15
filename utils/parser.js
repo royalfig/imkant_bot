@@ -79,12 +79,18 @@ exports.getAndParseMetaTags = async (url, input) => {
   };
   try {
     const metadata = await scrape(options);
+    // console.log(metadata);
 
     const metadataKeys = Object.keys(input.metadataConfig);
     const metadataObj = {};
 
     // If the key has an associated function (do: ), run it on the metadata
     metadataKeys.forEach((key) => {
+      // Return if tag does not exist for current resource
+      if (metadata[input.metadataConfig[key].property[0]] === undefined) {
+        return;
+      }
+
       if (input.metadataConfig[key].do) {
         metadataObj[key] = input.metadataConfig[key].do(
           metadata[input.metadataConfig[key].property[0]][
@@ -99,13 +105,8 @@ exports.getAndParseMetaTags = async (url, input) => {
       }
     });
 
-    console.log(metadataObj);
     return metadataObj;
   } catch (e) {
     console.log(e);
   }
-};
-
-const sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 };
