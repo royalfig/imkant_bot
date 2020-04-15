@@ -13,7 +13,7 @@ module.exports.config = {
     name: "British Journal for the History of Philosophy",
     color: "12",
     filter: true,
-    image: "",
+    rssOnly: false,
     url: "https://www.tandfonline.com/feed/rss/rbjh20",
 
     metadataConfig: {
@@ -136,7 +136,7 @@ module.exports.config = {
     url: "https://onlinelibrary.wiley.com/feed/14680378/most-recent",
     color: "14",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -147,20 +147,15 @@ module.exports.config = {
     },
 
     metadataConfig: {
-      // cookie problems
-      abstract: { property: "citation_abstract", do: "stripMarkUp" }, //func
-      author: { property: "citation_author", do: false },
-      date: { property: "citation_online_date", do: toIso },
-      doi: { property: "citation_doi", do: false },
-      institution: { property: "citation_author_institution", do: false },
-      firstpage: { property: "citation_firstpage", do: false },
-      lastpage: { property: "citation_lastpage", do: false },
-      keywords: { property: "citation_keywords", do: "splitAndCapFirstLetter" }, //func
-      title: { property: "citation_title", do: false },
-      issue: { property: "citation_issue", do: false },
-      journalTitle: { property: "citation_journal_title", do: false },
-      url: { property: "og:url", do: false },
-      volume: { property: "citation_volume", do: false },
+      abstract: { property: ["openGraph", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: false },
+      date: { property: ["highwirePress", "online_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      image: { property: ["openGraph", "image"], do: "getUrl" },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      title: { property: ["openGraph", "title"], do: false },
+      url: { property: ["openGraph", "url"], do: false },
     },
   },
   canadian_journal_of_philosophy: {
@@ -168,7 +163,7 @@ module.exports.config = {
     url: "https://www.tandfonline.com/feed/rss/rcjp20",
     color: "13",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "description", do: false },
@@ -184,20 +179,14 @@ module.exports.config = {
     },
 
     metadataConfig: {
-      // cookie problems
-      abstract: { property: "citation_abstract", do: "stripMarkUp" }, //func
-      author: { property: "citation_author", do: false },
-      date: { property: "citation_online_date", do: toIso },
-      doi: { property: "citation_doi", do: false },
-      institution: { property: "citation_author_institution", do: false },
-      firstpage: { property: "citation_firstpage", do: false },
-      lastpage: { property: "citation_lastpage", do: false },
-      keywords: { property: "citation_keywords", do: "splitAndCapFirstLetter" }, //func
-      title: { property: "citation_title", do: false },
-      issue: { property: "citation_issue", do: false },
-      journalTitle: { property: "citation_journal_title", do: false },
-      url: { property: "og:url", do: false },
-      volume: { property: "citation_volume", do: false },
+      abstract: { property: ["dublinCore", "description"], do: false },
+      author: { property: ["dublinCore", "creator"], do: false },
+      date: { property: ["dublinCore", "date"], do: "split 27 feb 2020" },
+      doi: { property: ["dublinCore", "source"], do: false },
+      image: { property: ["openGraph", "image"], do: "getUrl" },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      title: { property: ["openGraph", "title"], do: false },
+      url: { property: ["openGraph", "url"], do: false },
     },
   },
   graduate_faculty_philosophy_journal: {
@@ -239,6 +228,25 @@ module.exports.config = {
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
     },
+    metadataConfig: {
+      abstract: { property: ["openGraph", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: false },
+      date: { property: ["highwirePress", "online_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      image: { property: ["openGraph", "image"], do: "getUrl" },
+      institution: {
+        property: ["highwirePress", "author_institution"],
+        do: false,
+      },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      title: { property: ["openGraph", "title"], do: false },
+      url: { property: ["openGraph", "url"], do: false },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+    },
   },
   ethics: {
     name: "Ethics",
@@ -246,7 +254,7 @@ module.exports.config = {
       "https://www.journals.uchicago.edu/action/showFeed?type=etoc&feed=rss&jc=et",
     color: "9",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -259,6 +267,17 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+
+    metadataConfig: {
+      abstract: { property: ["dublinCore", "description"], do: false },
+      author: { property: ["dublinCore", "creator"], do: "stripDoubleSpace" },
+      date: { property: ["dublinCore", "date"], do: toIso },
+      doi: { property: ["dublinCore", "identifier"], do: "firstInArray" },
+
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      title: { property: ["dublinCore", "title"], do: false },
+      url: { property: ["dublinCore", "source"], do: false },
     },
   },
   idealistic_studies: {
@@ -267,7 +286,7 @@ module.exports.config = {
       "https://www.pdcnet.org/pdc/bvdb.nsf/getrssxml?openagent&synonym=idstudies",
     color: "7",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -280,6 +299,24 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+
+    metadataConfig: {
+      abstract: { property: ["general", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      institution: {
+        property: ["highwirePress", "author_institution"],
+        do: "arr?",
+      },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
     },
   },
   inquiry: {
@@ -287,7 +324,7 @@ module.exports.config = {
     url: "https://www.tandfonline.com/feed/rss/sinq20",
     color: "6",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -300,6 +337,21 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+
+    metadataConfig: {
+      abstract: { property: ["dublinCore", "description"], do: false },
+      author: {
+        property: ["dublinCore", "creator"],
+        do: "arr? remove dbl space",
+      },
+      date: { property: ["dublinCore", "date"], do: "split and form date" },
+      doi: { property: ["dublinCore", "identifier"], do: "array2" },
+      image: { property: ["openGraph", "image"], do: "get url from object" },
+      keywords: { property: ["dublinCore", "subject"], do: "split -> ;" },
+      title: { property: ["openGraph", "title"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["openGraph", "url"], do: false },
     },
   },
   the_philosophical_inquiry: {
@@ -307,7 +359,7 @@ module.exports.config = {
     url: "https://academic.oup.com/rss/site_5498/3359.xml",
     color: "5",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -320,6 +372,25 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+    metadataConfig: {
+      abstract: { property: ["openGraph", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      institution: {
+        property: ["highwirePress", "author_institution"],
+        do: "arr?",
+      },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      image: { property: ["openGraph", "image"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
+      keywords: { property: ["jsonLd", "keywords"], do: false },
     },
   },
   philosophy_and_phenomenological_research: {
@@ -327,7 +398,7 @@ module.exports.config = {
     url: "https://onlinelibrary.wiley.com/feed/19331592/most-recent",
     color: "4",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -341,13 +412,28 @@ module.exports.config = {
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
     },
+    metadataConfig: {
+      abstract: { property: ["general", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      date: { property: ["highwirePress", "online_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      institution: {
+        property: ["highwirePress", "author_institution"],
+        do: "arr?",
+      },
+      title: { property: ["highwirePress", "title"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["openGraph", "url"], do: false },
+      keywords: { property: ["highwirePress", "keywords"], do: false },
+      image: { property: ["openGraph", "image"], do: "get url" },
+    },
   },
   the_monist: {
     name: "The Monist",
     url: "http://academic.oup.com/rss/site_5491/3352.xml",
     color: "3",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -360,6 +446,24 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+    metadataConfig: {
+      abstract: { property: ["general", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      institution: {
+        property: ["highwirePress", "author_institution"],
+        do: "arr?",
+      },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
+      image: { property: ["openGraph", "image"], do: "get url" },
     },
   },
   philosophical_topics: {
@@ -382,13 +486,31 @@ module.exports.config = {
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
     },
+    metadataConfig: {
+      abstract: { property: ["general", "description"], do: false },
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      institution: {
+        property: ["highwirePress", "author_institution"],
+        do: "arr?",
+      },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
+      image: { property: ["openGraph", "image"], do: "get url" },
+    },
   },
   ergo: {
     name: "Ergo",
     url: "https://www.ergophiljournal.org/e/ergo/longfeed.xml",
     color: "1",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "content:encoded", do: false },
@@ -401,6 +523,14 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+    metadataConfig: {
+      author: { property: ["highwirePress", "author"], do: "arr?lastFirst" },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
     },
   },
   studies_in_history_and_philosophy_of_science_part_a: {
@@ -421,6 +551,15 @@ module.exports.config = {
       volume: { property: "prism:volume", do: false },
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
+    },
+
+    metadataConfig: {
+      abstract: { property: ["openGraph", "description"], do: false },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
     },
   },
   kant_yearbook: {
@@ -443,6 +582,20 @@ module.exports.config = {
       issue: { property: "prism:number", do: false },
       url: { property: "link", do: removeParams },
     },
+    metadataConfig: {
+      abstract: { property: ["openGraph", "description"], do: "strip" },
+      author: { property: ["highwirePress", "author"], do: "arr" },
+      date: { property: ["highwirePress", "publication_date"], do: toIso },
+      doi: { property: ["highwirePress", "doi"], do: false },
+      image: { property: ["openGraph", "image"], do: "geturl" },
+      firstpage: { property: ["highwirePress", "firstpage"], do: false },
+      lastpage: { property: ["highwirePress", "lastpage"], do: false },
+      title: { property: ["highwirePress", "title"], do: false },
+      issue: { property: ["highwirePress", "issue"], do: false },
+      journalTitle: { property: ["highwirePress", "journal_title"], do: false },
+      url: { property: ["general", "canonical"], do: false },
+      volume: { property: ["highwirePress", "volume"], do: false },
+    },
   },
 };
 
@@ -451,8 +604,7 @@ const request = require("request");
 
 const go = async (input) => {
   var options = {
-    url:
-      "https://www.cambridge.org/core/journals/kantian-review/article/which-emotions-should-kantians-cultivate-and-which-ones-should-they-discipline/1963B906AE2A3B777245DDDA78CE80B6",
+    url: "https://www.degruyter.com/view/journals/kantyb/11/1/article-p17.xml",
     jar: request.jar(), // Cookie jar
     headers: {
       // "User-Agent": "webscraper",
@@ -460,6 +612,7 @@ const go = async (input) => {
   };
 
   scrape(options).then((metadata, error) => {
+    console.log(metadata);
     const metadataKeys = Object.keys(input.metadataConfig);
     const metadataObj = {};
     metadataKeys.forEach((key) => {
@@ -469,14 +622,13 @@ const go = async (input) => {
         ];
     });
     console.log(metadataObj);
-    // console.log(metadata);
 
     if (error) {
       console.log(error);
     }
   });
 };
-go(this.config.kantian_review);
+go(this.config.kant_yearbook);
 // const t = Object.keys(
 //   this.config.british_journal_for_the_history_of_philosophy.metadataConfig
 // );
