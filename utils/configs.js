@@ -22,12 +22,12 @@ module.exports.source = {
     url: "https://www.tandfonline.com/feed/rss/rbjh20",
 
     metadataConfig: {
-      abstract: { property: ["general", "description"], do: false },
+      abstract: { property: ["openGraph", "description"], do: false },
       author: { property: ["dublinCore", "creator"], do: removeDoubleSpace },
       date: { property: ["dublinCore", "date"], do: dateConversion },
       doi: { property: ["dublinCore", "identifier"], do: getFirstItemInArray },
       title: { property: ["dublinCore", "title"], do: false },
-      image: { property: ["openGraph", "image"], do: false },
+      image: { property: ["openGraph", "image"], do: getImgUrl },
       keywords: { property: ["dublinCore", "subject"], do: splitBySemiColon },
       url: { property: ["openGraph", "url"], do: false },
     },
@@ -112,7 +112,7 @@ module.exports.source = {
 
     rssConfig: {
       abstract: { property: "content", do: false },
-      author: { property: "creator", do: reverseNameOrder },
+      author: { property: "creator", do: false },
       date: { property: "dc:date", do: toIso },
       title: { property: "title", do: false },
       url: { property: "link", do: removeParams },
@@ -348,7 +348,7 @@ module.exports.source = {
       abstract: { property: ["dublinCore", "description"], do: false },
       author: {
         property: ["dublinCore", "creator"],
-        do: "arr? remove dbl space",
+        do: removeDoubleSpace,
       },
       date: { property: ["dublinCore", "date"], do: dateConversion },
       doi: { property: ["dublinCore", "identifier"], do: getSecondItemInArray },
@@ -543,7 +543,7 @@ module.exports.source = {
     url: "http://rss.sciencedirect.com/publication/science/00393681",
     color: "16",
     filter: true,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "description", do: false },
@@ -573,7 +573,7 @@ module.exports.source = {
       "https://www.degruyter.com/journalissuetocrss/journals/kantyb/kantyb-overview.xml",
     color: "17",
     filter: false,
-    rssOnly: true,
+    rssOnly: false,
 
     rssConfig: {
       abstract: { property: "description", do: false },
@@ -605,21 +605,8 @@ module.exports.source = {
 };
 
 // TODO Automate Config
-
-// const { getRss, getAndParseMetaTags } = require("./parser");
-// const Article = require(".././models/models");
-
-// const getDataAndPost = async (config) => {
-//   const urls = await getRss(config);
-//   const promises = urls.map(async (url) => {
-//     const metadataObj = await getAndParseMetaTags(url, config);
-//     return metadataObj;
-//   });
-
-//   const metadataObjArr = await Promise.all(promises);
-//   const ghostPosts = metadataObjArr.map((item) => new Article(item));
-
-//   console.log(ghostPosts);
-// };
-
-// go(this.config.kant_studien);
+// const { getAndParseMetaTags } = require("./parser");
+// getAndParseMetaTags(
+//   "https://www.tandfonline.com/doi/full/10.1080/09608788.2019.1624946?af=R",
+//   this.source.inquiry
+// );

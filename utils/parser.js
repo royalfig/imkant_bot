@@ -41,29 +41,29 @@ exports.getRss = async (config) => {
     const filteredFeed = filterForKantArticles
       ? filterForKant(feedWithoutExtraneousMaterials)
       : feedWithoutExtraneousMaterials;
-    const data = [];
-    filteredFeed.forEach(async (item) => {
-      const metadata = {};
-      metadata.journalTitle = config.name;
+    // const data = [];
+    // filteredFeed.forEach(async (item) => {
+    //   const metadata = {};
+    //   metadata.journalTitle = config.name;
 
-      metadata.author = config.rssConfig.author.do
-        ? config.rssConfig.author.do(item[config.rssConfig.author.property])
-        : item[config.rssConfig.author.property];
+    //   metadata.author = config.rssConfig.author.do
+    //     ? config.rssConfig.author.do(item[config.rssConfig.author.property])
+    //     : item[config.rssConfig.author.property];
 
-      metadata.date = config.rssConfig.date.do
-        ? config.rssConfig.date.do(item[config.rssConfig.date.property])
-        : item[config.rssConfig.date.property];
+    //   metadata.date = config.rssConfig.date.do
+    //     ? config.rssConfig.date.do(item[config.rssConfig.date.property])
+    //     : item[config.rssConfig.date.property];
 
-      metadata.title = config.rssConfig.title.do
-        ? config.rssConfig.title.do(item[config.rssConfig.title.property])
-        : item[config.rssConfig.title.property];
+    //   metadata.title = config.rssConfig.title.do
+    //     ? config.rssConfig.title.do(item[config.rssConfig.title.property])
+    //     : item[config.rssConfig.title.property];
 
-      metadata.url = config.rssConfig.url.do
-        ? config.rssConfig.url.do(item[config.rssConfig.url.property])
-        : config.rssConfig.url.property;
+    //   metadata.url = config.rssConfig.url.do
+    //     ? config.rssConfig.url.do(item[config.rssConfig.url.property])
+    //     : config.rssConfig.url.property;
 
-      data.push(metadata);
-    });
+    //   data.push(metadata);
+    // });
     const onlyUrls = filteredFeed.map((item) => item.link);
     const onlyUniqueUrls = [...new Set(onlyUrls)];
     return onlyUniqueUrls;
@@ -79,7 +79,7 @@ exports.getAndParseMetaTags = async (url, input) => {
   };
   try {
     const metadata = await scrape(options);
-    // console.log(metadata);
+    console.log(metadata);
 
     const metadataKeys = Object.keys(input.metadataConfig);
     const metadataObj = {};

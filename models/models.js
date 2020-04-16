@@ -33,7 +33,6 @@ class Article {
     this.issue = data.issue;
     this.journalTitle = data.journalTitle;
     this.lastpage = data.lastpage;
-    this.tags = this.createKeywords(data.keywords);
     this.url = data.url;
     this.volume = data.volume;
 
@@ -44,6 +43,7 @@ class Article {
     this.shortAbstract = this.shortenAbstract(stripMarkUp(this.abstract));
     this.shortTitle = this.createTitleOptions(data.title).shortTitle;
     this.formattedDate = this.formatDate(this.date);
+    this.tags = this.createKeywords(data.keywords);
 
     // Create content and post model
     this.mobiledoc = this.createPostContent();
@@ -88,18 +88,25 @@ class Article {
   }
 
   createKeywords(keywords) {
-    if (this.bookReview && keywords) {
-      keywords.push("Book Review", this.journalTitle);
-      return keywords;
-    }
-    if (!keywords && this.bookReview) {
-      return ["Book Review", this.journalTitle];
-    }
-    if (!keywords && !this.bookReview) {
-      return ["Article", this.journalTitle];
-    }
-    keywords.push("Article", this.journalTitle);
-    return keywords;
+    const journal = this.journalTitle || "Journal";
+
+    const kw = this.bookReview
+      ? ["Book Review", journal]
+      : ["Article", journal];
+
+    return kw;
+    // if (this.bookReview && keywords) {
+    //   keywords.push("Book Review", journal);
+    //   return keywords;
+    // }
+    // if (!keywords && this.bookReview) {
+    //   return ["Book Review", journal];
+    // }
+    // if (!keywords && !this.bookReview) {
+    //   return ["Article", journal];
+    // }
+    // keywords.push("Article", journal);
+    // return keywords;
   }
 
   createPostContent() {
@@ -107,6 +114,10 @@ class Article {
     const author = this.author || `${this.journalTitle}`;
     const institution =
       this.institution !== undefined ? ` (${this.institution}) ` : "";
+    const citationText =
+      this.volume && this.issue && this.firstpage && this.lastpage
+        ? ` ${this.volume}.${this.issue}: ${this.firstpage}-${this.lastpage}`
+        : "";
     // TODO Add logic to refine html output when elements are missing.
     const citation = `
       <div class="media">
@@ -119,7 +130,7 @@ class Article {
         </div>
         <div class="media__right">
           <div class="media__content">
-            <p>${author}${institution} published <a href="${this.url}">&ldquo;${this.longTitle}&rdquo;</a> on ${this.formattedDate} in <em>${this.journalTitle}</em> ${this.volume}.${this.issue}: ${this.firstpage}-${this.lastpage}. <a href="${this.doi}">${this.doi}</a>.</p>
+            <p>${author}${institution} published <a href="${this.url}">&ldquo;${this.longTitle}&rdquo;</a> on ${this.formattedDate} in <em>${this.journalTitle}</em>${citationText}. <a href="${this.doi}">${this.doi}</a>.</p>
           </div>
         </div>
       </div>`;
@@ -148,12 +159,13 @@ class Article {
       title: this.shortTitle,
       published_at: this.date,
       mobiledoc: this.mobiledoc,
-      tags: this.tags,
+      // tags: this.tags,
       feature_image: this.featureImage,
       authors: ["rfeigenb@nd.edu"],
       custom_excerpt: this.shortAbstract,
       excerpt: this.shortAbstract,
       meta_description: this.shortAbstract,
+      status: "published",
     };
     return objToPost;
   }

@@ -13,7 +13,7 @@
   "author": "Ryan Feigenbaum",
   "license": "ISC",
   "dependencies": {
-    "@tryghost/admin-api": "^1.1.0",
+    "@tryghost/admin-api": "^1.2.0",
     "axios": "^0.19.2",
     "cors": "^2.8.5",
     "domino": "^2.1.4",
@@ -21,10 +21,10 @@
     "express": "^4.17.1",
     "html-metadata": "^1.7.1",
     "metaget": "^1.0.7",
-    "metascraper": "^5.11.8",
-    "metascraper-author": "^5.11.8",
-    "metascraper-date": "^5.11.8",
-    "metascraper-description": "^5.11.8",
+    "metascraper": "^5.11.9",
+    "metascraper-author": "^5.11.9",
+    "metascraper-date": "^5.11.9",
+    "metascraper-description": "^5.11.9",
     "page-metadata-parser": "^1.1.4",
     "rss-parser": "^3.7.6"
   }

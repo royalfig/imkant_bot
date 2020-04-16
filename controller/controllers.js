@@ -69,38 +69,35 @@ const postToGhost = async (config) => {
   const ghostPosts = metadataObjArr.map(
     (item) => new Article(item, config.color)
   );
-  // Log fetched models
-  const date = `${
-    new Date().getMonth() + 1
-  }-${new Date().getDate()}-${new Date().getFullYear()}`;
-
-  const filename = `log-${date}.txt`;
-
-  ghostPosts.forEach((item, idx) => {
-    fs.appendFileSync(
-      path.join(process.cwd(), "logs", filename),
-      "\n" + idx + ". " + item.ghostModel + "\n",
-      (err) => {
-        console.log(err);
-      }
-    );
-  });
 
   // Post to ghost db
   const dedupedArr = ghostPosts.filter(
-    (item) => !existingPostTitles.includes(item.title)
+    (item) => !existingPostTitles.includes(item.shortTitle)
   );
-  // console.log(dedupedArr);
-  // dedupedArr.map((item) => {
-  //   api.posts
-  //     .add(item.ghostModel)
-  //     .then((res) => res.title)
-  //     .then(() => sleep(500))
-  //     .catch((e) => console.log(e));
-  // });
+
+  dedupedArr.map((item) => {
+    api.posts
+      .add(item.ghostModel)
+      .then((res) => res.title)
+      .then(() => sleep(1000))
+      .catch((e) => console.log(e));
+  });
+
+  // Log fetched models
+  const date = Date.now();
+
+  const filename = `log-${date}.json`;
+
+  fs.writeFileSync(
+    path.join(process.cwd(), "logs", filename),
+    JSON.stringify(dedupedArr),
+    (err) => {
+      console.log(err);
+    }
+  );
   return dedupedArr;
 };
-postToGhost(config.source.kant_studien);
+postToGhost(config.source.studies_in_history_and_philosophy_of_science_part_a);
 exports.getPostsFromGhost = getPostsFromGhost;
 exports.getPostTitles = getPostTitles;
 exports.deletePosts = deletePosts;
