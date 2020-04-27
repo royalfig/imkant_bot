@@ -6,27 +6,27 @@
 let Parser = require("rss-parser");
 let parser = new Parser({
   headers: {
-    Accept: "application/xml, application/rss+xml, text/xml",
-  },
+    Accept: "application/xml, application/rss+xml, text/xml"
+  }
 });
 const scrape = require("html-metadata");
 const request = require("request");
 
 // Filters for limiting data to relevant content
-const filterForKant = (postArray) => {
+const filterForKant = postArray => {
   const regex = RegExp(/Kant/i);
-  const results = postArray.filter((post) => regex.test(post.title));
+  const results = postArray.filter(post => regex.test(post.title));
   return results;
 };
 
-const filterOutFrontMatter = (postArray) => {
+const filterOutFrontMatter = postArray => {
   const regex = RegExp(/Titelseiten|Front Matter|Back Matter/i);
-  const results = postArray.filter((post) => !regex.test(post.title));
+  const results = postArray.filter(post => !regex.test(post.title));
   return results;
 };
 
 // Get RSS feed and parse
-exports.getRss = async (config) => {
+exports.getRss = async config => {
   const url = config.url;
 
   // For general sources, limit results to subject
@@ -64,7 +64,7 @@ exports.getRss = async (config) => {
 
     //   data.push(metadata);
     // });
-    const onlyUrls = filteredFeed.map((item) => item.link);
+    const onlyUrls = filteredFeed.map(item => item.link);
     const onlyUniqueUrls = [...new Set(onlyUrls)];
     return onlyUniqueUrls;
   } catch (e) {
@@ -75,17 +75,17 @@ exports.getRss = async (config) => {
 exports.getAndParseMetaTags = async (url, input) => {
   const options = {
     url: url,
-    jar: request.jar(), // Cookie jar
+    jar: request.jar() // Cookie jar
   };
   try {
     const metadata = await scrape(options);
-    console.log(metadata);
+    // console.log(metadata);
 
     const metadataKeys = Object.keys(input.metadataConfig);
     const metadataObj = {};
 
     // If the key has an associated function (do: ), run it on the metadata
-    metadataKeys.forEach((key) => {
+    metadataKeys.forEach(key => {
       // Return if tag does not exist for current resource
       if (metadata[input.metadataConfig[key].property[0]] === undefined) {
         return;
@@ -106,6 +106,20 @@ exports.getAndParseMetaTags = async (url, input) => {
     });
 
     return metadataObj;
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+exports.getSingleUrl = async url => {
+  const options = {
+    url: url,
+    jar: request.jar() // Cookie jar
+  };
+
+  try {
+    const metadata = await scrape(options);
+    return metadata;
   } catch (e) {
     console.log(e);
   }
